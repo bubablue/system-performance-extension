@@ -208,8 +208,6 @@ npm run watch
 # Run all tests
 npm test
 
-# Run tests in watch mode
-npm run watch-tests
 ```
 
 ### Debugging
