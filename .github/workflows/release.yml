@@ -24,11 +24,11 @@ jobs:
       - name: Install Dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build Extension
-        run: npm run package
-
       - name: Install Publishing Tools
         run: npm install -g @vscode/vsce ovsx
+
+      - name: Build Extension
+        run: npm run package
 
       - name: Publish to VS Code Marketplace
         run: npx vsce publish --pat ${{ secrets.AZURE_DEVOPS_TOKEN }}
