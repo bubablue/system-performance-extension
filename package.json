@@ -4,6 +4,7 @@
   "displayName": "System Performance",
   "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
   "version": "0.0.2",
+  "icon": "icon.png",
   "keywords": [
     "system",
     "performance",
@@ -18,6 +19,12 @@
   ],
   "engines": {
     "vscode": "^1.102.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "This extension requires system access to monitor performance metrics."
+    }
   },
   "categories": [
     "Other",
@@ -132,7 +139,7 @@
     "lint": "eslint src",
     "test": "npm run compile && node ./out/test/e2e/runTests.js",
     "test:e2e": "npm run compile && node ./out/test/e2e/runTests.js",
-    "package": "vsce package --no-dependencies",
+    "package": "vsce package",
     "generate-changelog": "github_changelog_generator -u bubablue -p dynamic-import-references -t $GITHUB_TOKEN"
   },
   "devDependencies": {
