@@ -76,7 +76,6 @@ export class SystemMonitor {
           const systemData = await SystemMonitor.collectSystemData();
           SystemMonitor.lastSystemData = systemData;
 
-          // Update all status bar instances for all active monitors
           SystemMonitor.activeMonitors.forEach((monitor) => {
             if (monitor.monitoringEnabled && !monitor.isPaused) {
               monitor.statusBarInstances.forEach((items) => {

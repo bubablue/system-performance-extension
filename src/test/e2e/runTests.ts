@@ -20,8 +20,14 @@ async function main() {
         "--disable-workspace-trust",
         "--skip-welcome",
         "--skip-release-notes",
+        "--disable-telemetry",
+        "--no-sandbox",
         `--user-data-dir=${userDataDir}`
       ],
+      extensionTestsEnv: {
+        NODE_ENV: 'test',
+        VSCODE_TEST_MODE: 'true'
+      }
     });
   } catch (err) {
     console.error("Failed to run tests:", err);

@@ -1,19 +1,14 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
+import { TestHelper } from "./testHelper";
 
 suite("System Performance Webview E2E Tests", () => {
-  let extension: vscode.Extension<any>;
-
   setup(async () => {
-    extension = vscode.extensions.getExtension(
-      "bubablue00.system-performance"
-    )!;
+    await TestHelper.setupExtensionForTesting();
+  });
 
-    if (!extension.isActive) {
-      await extension.activate();
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 4000));
+  teardown(async () => {
+    await TestHelper.cleanupExtension();
   });
 
   test("Webview should be creatable", async () => {
