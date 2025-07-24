@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Resources</title>
+    <link rel="stylesheet" href="{{cssPath}}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="title">
+        System Resources
+        <div class="controls">
+          <button
+            id="toggle-monitoring"
+            class="control-btn running"
+            title="Stop Monitoring"
+          >
+            <span id="monitoring-icon">Stop</span>
+          </button>
+          <button id="settings-btn" class="control-btn" title="Settings">
+            <span>Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="chart-view" class="chart-container">
+        <div class="y-axis">
+          <div class="y-tick"><span class="y-label">0%</span></div>
+          <div class="y-tick"><span class="y-label">25%</span></div>
+          <div class="y-tick"><span class="y-label">50%</span></div>
+          <div class="y-tick"><span class="y-label">75%</span></div>
+          <div class="y-tick"><span class="y-label">100%</span></div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">SYS<br />CPU</div>
+          <div class="bar-track">
+            <div class="bar-fill cpu-fill" id="cpu-fill" style="height: 0%">
+              <div class="percentage" id="cpu-percentage">0%</div>
+            </div>
+          </div>
+          <div class="bar-value" id="cpu-value">0%</div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">RAM<br />ACT</div>
+          <div class="bar-track">
+            <div
+              class="bar-fill memory-fill"
+              id="memory-fill"
+              style="height: 0%"
+            >
+              <div class="percentage" id="memory-percentage">0%</div>
+            </div>
+          </div>
+          <div class="bar-value" id="memory-value">0%</div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">VSC<br />CPU</div>
+          <div class="bar-track">
+            <div
+              class="bar-fill vscode-cpu-fill"
+              id="vscode-cpu-fill"
+              style="height: 0%"
+            >
+              <div class="percentage" id="vscode-cpu-percentage">0%</div>
+            </div>
+          </div>
+          <div class="bar-value" id="vscode-cpu-value">0%</div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">VSC<br />RAM</div>
+          <div class="bar-track">
+            <div
+              class="bar-fill vscode-memory-fill"
+              id="vscode-memory-fill"
+              style="height: 0%"
+            >
+              <div class="percentage" id="vscode-memory-percentage">0%</div>
+            </div>
+          </div>
+          <div class="bar-value" id="vscode-memory-value">0MB</div>
+        </div>
+
+        <div class="bar-item">
+          <div class="bar-label">NET<br />I/O</div>
+          <div class="bar-track">
+            <div
+              class="bar-fill network-fill"
+              id="network-fill"
+              style="height: 0%"
+            >
+              <div class="percentage" id="network-percentage">0</div>
+            </div>
+          </div>
+          <div class="bar-value" id="network-value">0↓0↑</div>
+        </div>
+      </div>
+
+      <div id="settings-view" class="settings-panel" style="display: none">
+        <h3>Monitoring Settings</h3>
+
+        <div class="setting-group">
+          <h4>Status Bar Items</h4>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" id="show-cpu" checked />
+              <span>System CPU Usage</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="show-memory" checked />
+              <span>System Memory Usage</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="show-vscode-cpu" checked />
+              <span>VS Code CPU Usage</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="show-vscode-memory" checked />
+              <span>VS Code Memory Usage</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="show-network" checked />
+              <span>Network I/O</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h4>Update Interval</h4>
+          <div class="input-group">
+            <label for="update-interval">Interval (ms):</label>
+            <input
+              type="number"
+              id="update-interval"
+              min="500"
+              max="10000"
+              step="100"
+              value="2000"
+            />
+          </div>
+        </div>
+
+        <div class="settings-buttons">
+          <button id="save-settings" class="settings-btn primary">
+            Save Settings
+          </button>
+          <button id="restore-defaults" class="settings-btn secondary">
+            Restore Defaults
+          </button>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-row">
+          <span>Total Memory:</span>
+          <span id="total-memory">0 GB</span>
+        </div>
+        <div class="info-row">
+          <span>Used Memory:</span>
+          <span id="used-memory">0 GB</span>
+        </div>
+        <div class="info-row">
+          <span>System Uptime:</span>
+          <span id="uptime">--</span>
+        </div>
+        <div class="info-row">
+          <span>Update Rate:</span>
+          <span>Every 2s</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{jsPath}}"></script>
+  </body>
+</html>

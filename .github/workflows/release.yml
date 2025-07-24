@@ -1,0 +1,37 @@
+name: Release VS Code Extension
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  release:
+    name: Publish Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build Extension
+        run: npm run package
+
+      - name: Install Publishing Tools
+        run: npm install -g @vscode/vsce ovsx
+
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish --pat ${{ secrets.AZURE_DEVOPS_TOKEN }}
+
+      # - name: Publish to Open VSX
+      #   run: npx ovsx publish -p ${{ secrets.OVSX_TOKEN }}

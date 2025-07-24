@@ -1,0 +1,62 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-test:
+    name: Build & Test System Performance Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      # - name: Run Unit Tests
+      #   run: npm run test
+
+      - name: Run E2E Tests
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+            export DISPLAY=:99
+            Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+            sleep 3
+          fi
+          npm run test:e2e
+        env:
+          DISPLAY: ':99'
+
+      - name: Check for TypeScript Errors
+        run: npx tsc --noEmit
+
+      - name: Verify Extension Package
+        run: |
+          npm install -g @vscode/vsce
+          vsce package --no-dependencies
+
+      - name: Upload Extension Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-performance-extension
+          path: "*.vsix"
+          retention-days: 7

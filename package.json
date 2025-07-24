@@ -1,0 +1,154 @@
+{
+  "name": "system-performance",
+  "publisher": "bubablue00",
+  "displayName": "System Performance",
+  "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
+  "version": "0.0.1",
+  "keywords": [
+    "system",
+    "performance",
+    "monitoring",
+    "cpu",
+    "memory",
+    "resources",
+    "graph",
+    "chart",
+    "status",
+    "metrics"
+  ],
+  "engines": {
+    "vscode": "^1.102.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization",
+    "Debuggers"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/system-performance-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/system-performance-extension/issues"
+  },
+  "homepage": "https://github.com/yourusername/system-performance-extension#readme",
+  "license": "MIT",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "system-performance.showGraph",
+        "title": "Show System Graph"
+      },
+      {
+        "command": "system-performance.toggleGraph",
+        "title": "Toggle System Graph"
+      },
+      {
+        "command": "system-performance.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "system-performance.toggleMonitoring",
+        "title": "Toggle Monitoring",
+        "icon": "$(eye)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "systemResourcesView",
+          "name": "System Resources",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "system-performance.refresh",
+          "when": "view == systemResourcesView",
+          "group": "navigation"
+        },
+        {
+          "command": "system-performance.toggleMonitoring",
+          "when": "view == systemResourcesView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "System Graph",
+      "properties": {
+        "systemGraph.showCpu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CPU usage bar"
+        },
+        "systemGraph.showMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show memory usage bar"
+        },
+        "systemGraph.showVscodeCpu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code CPU usage bar"
+        },
+        "systemGraph.showVscodeMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code memory usage bar"
+        },
+        "systemGraph.showNetwork": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show network I/O bar"
+        },
+        "systemGraph.statusBarEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable status bar monitoring"
+        },
+        "systemGraph.updateInterval": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 500,
+          "maximum": 10000,
+          "description": "Update interval in milliseconds"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "npm run compile && node ./out/test/e2e/runTests.js",
+    "test:e2e": "npm run compile && node ./out/test/e2e/runTests.js",
+    "package": "vsce package --no-dependencies",
+    "generate-changelog": "github_changelog_generator -u bubablue -p dynamic-import-references -t $GITHUB_TOKEN"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.102.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0"
+  },
+  "dependencies": {
+    "systeminformation": "^5.27.7"
+  }
+}

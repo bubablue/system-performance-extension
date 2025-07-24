@@ -1,0 +1,88 @@
+{
+    "manifestVersion": 1,
+    "id": "system-performance",
+    "version": "0.0.1",
+    "name": "System Performance",
+    "publisher": "bubablue00",
+    "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
+    "targets": [
+      {
+        "id": "Microsoft.VisualStudio.Services"
+      }
+    ],
+    "icons": {
+      "default": "icon.png"
+    },
+    "scopes": [
+      "vso.code_write",
+      "vso.build_execute"
+    ],
+    "categories": [
+      "Other",
+      "Visualization",
+      "Debuggers"
+    ],
+    "branding": {
+      "color": "rgb(0, 122, 204)",
+      "theme": "dark"
+    },
+    "content": {
+      "details": {
+        "path": "readme.md"
+      },
+      "license": {
+        "path": "LICENSE"
+      }
+    },
+    "links": {
+      "getstarted": {
+        "uri": "https://github.com/bubablue/system-performance-extension"
+      },
+      "support": {
+        "uri": "https://github.com/bubablue/system-performance-extension/issues"
+      }
+    },
+    "repository": {
+      "type": "git",
+      "uri": "https://github.com/bubablue/system-performance-extension"
+    },
+    "contributions": [
+      {
+        "id": "ms.vss-web.action-contribution",
+        "type": "ms.vss-web.action",
+        "description": "System Performance Monitoring",
+        "targets": [
+          "ms.vss-web.content-menu"
+        ],
+        "properties": {
+          "text": "Show System Performance",
+          "title": "Display real-time system performance metrics",
+          "icon": "icon.png",
+          "uri": "index.html"
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "out/extension.js",
+        "addressable": true
+      },
+      {
+        "path": "src/webview.html",
+        "addressable": true
+      },
+      {
+        "path": "src/webview.css",
+        "addressable": true
+      },
+      {
+        "path": "src/webview.js",
+        "addressable": true
+      },
+      {
+        "path": "README.md",
+        "addressable": true
+      }
+    ]
+  }
+  
