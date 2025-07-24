@@ -94,7 +94,6 @@ export function activate(context: vscode.ExtensionContext) {
       )
     );
 
-    // Start monitoring with this window's status bar items
     globalState.systemMonitor.startSystemMonitoring(statusBarItems);
 
     const showGraphDisposable = vscode.commands.registerCommand(
