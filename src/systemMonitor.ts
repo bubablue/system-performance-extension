@@ -1,9 +1,9 @@
 import * as si from "systeminformation";
 import * as vscode from "vscode";
-import { StatusBarItems, HistoryData, SystemData } from "./types";
-import { formatBytes, generateMiniGraph, addToHistory } from "./utils";
 import { StatusBarManager } from "./statusBarManager";
 import { SystemResourcesProvider } from "./systemResourcesProvider";
+import { HistoryData, StatusBarItems, SystemData } from "./types";
+import { addToHistory, formatBytes, generateMiniGraph } from "./utils";
 
 export class SystemMonitor {
   private updateInterval: NodeJS.Timeout | undefined;
@@ -20,11 +20,18 @@ export class SystemMonitor {
     diskWrite: [],
   };
   private readonly HISTORY_LENGTH = 15;
+  private static readonly activeMonitors = new Set<SystemMonitor>();
+  private static globalInterval: NodeJS.Timeout | undefined;
+  private static lastUpdateTime = 0;
+  private static isUpdating = false;
+  private static lastSystemData: any = null;
 
   constructor(
     private readonly statusBarManager: StatusBarManager,
     private readonly provider: SystemResourcesProvider
-  ) {}
+  ) {
+    SystemMonitor.activeMonitors.add(this);
+  }
 
   public startSystemMonitoring(statusBarItems: StatusBarItems): void {
     if (this.updateInterval) {
@@ -36,11 +43,50 @@ export class SystemMonitor {
     const updateIntervalMs = config.get("updateInterval", 2000);
 
     if (!this.isPaused && this.monitoringEnabled) {
-      this.updateInterval = setInterval(() => this.updateSystemInfo(statusBarItems), updateIntervalMs);
-      this.updateSystemInfo(statusBarItems);
+      SystemMonitor.globalInterval ??= setInterval(async () => {
+        if (SystemMonitor.isUpdating) {
+          return;
+        }
+
+        const now = Date.now();
+        if (now - SystemMonitor.lastUpdateTime < updateIntervalMs - 200) {
+          return;
+        }
+
+        SystemMonitor.isUpdating = true;
+        SystemMonitor.lastUpdateTime = now;
+
+        try {
+          const systemData = await SystemMonitor.collectSystemData();
+          SystemMonitor.lastSystemData = systemData;
+
+          SystemMonitor.activeMonitors.forEach((monitor) => {
+            if (monitor.monitoringEnabled && !monitor.isPaused) {
+              const items = monitor.statusBarManager.getStatusBarItems();
+              if (items) {
+                monitor.updateWithSystemData(items, systemData);
+              }
+            }
+          });
+        } catch (error) {
+          console.error("Error in global system monitoring:", error);
+        } finally {
+          SystemMonitor.isUpdating = false;
+        }
+      }, updateIntervalMs);
+
+      if (SystemMonitor.lastSystemData) {
+        this.updateWithSystemData(statusBarItems, SystemMonitor.lastSystemData);
+      } else {
+        this.updateSystemInfo(statusBarItems);
+      }
+
       this.statusBarManager.updateStatusBarVisibility(statusBarItems);
 
-      console.log("System monitoring started with interval:", updateIntervalMs);
+      console.log(
+        "System monitoring started for monitor. Active monitors:",
+        SystemMonitor.activeMonitors.size
+      );
     } else {
       console.log(
         "System monitoring not started - isPaused:",
@@ -55,6 +101,19 @@ export class SystemMonitor {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
       this.updateInterval = undefined;
+    }
+
+    SystemMonitor.activeMonitors.delete(this);
+
+    if (
+      SystemMonitor.activeMonitors.size === 0 &&
+      SystemMonitor.globalInterval
+    ) {
+      clearInterval(SystemMonitor.globalInterval);
+      SystemMonitor.globalInterval = undefined;
+      SystemMonitor.isUpdating = false;
+      SystemMonitor.lastSystemData = null;
+      SystemMonitor.lastUpdateTime = 0;
     }
   }
 
@@ -78,20 +137,31 @@ export class SystemMonitor {
     if (this.isPaused) {
       vscode.window.showInformationMessage("System monitoring paused");
 
-      this.stopSystemMonitoring();
-      this.statusBarManager.hideAllStatusBarItems(statusBarItems);
       this.monitoringEnabled = false;
+      this.statusBarManager.hideAllStatusBarItems(statusBarItems);
+
+      const anyActiveMonitor = Array.from(SystemMonitor.activeMonitors).some(
+        (monitor) => monitor.monitoringEnabled && !monitor.isPaused
+      );
+
+      if (!anyActiveMonitor && SystemMonitor.globalInterval) {
+        clearInterval(SystemMonitor.globalInterval);
+        SystemMonitor.globalInterval = undefined;
+        SystemMonitor.isUpdating = false;
+        SystemMonitor.lastSystemData = null;
+      }
     } else {
       vscode.window.showInformationMessage("System monitoring resumed");
 
       this.monitoringEnabled = true;
       this.startSystemMonitoring(statusBarItems);
       this.statusBarManager.updateStatusBarVisibility(statusBarItems);
-      this.updateSystemInfo(statusBarItems);
     }
   }
 
-  private async updateSystemInfo(statusBarItems: StatusBarItems): Promise<void> {
+  private async updateSystemInfo(
+    statusBarItems: StatusBarItems
+  ): Promise<void> {
     if (!statusBarItems || !this.monitoringEnabled) {
       return;
     }
@@ -115,7 +185,10 @@ export class SystemMonitor {
           p.name.toLowerCase().includes("vscode")
       );
 
-      const vscodeCpu = vscodeProcesses.reduce((sum, p) => sum + (p.cpu || 0), 0);
+      const vscodeCpu = vscodeProcesses.reduce(
+        (sum, p) => sum + (p.cpu || 0),
+        0
+      );
       const vscodeMemory = vscodeProcesses.reduce(
         (sum, p) => sum + (p.mem || 0),
         0
@@ -123,20 +196,25 @@ export class SystemMonitor {
       const vscodeMemoryMB =
         (vscodeMemory / 100) * (memory.total / (1024 * 1024));
 
-      const activeMemory = memory.active || memory.used - (memory.buffcache || 0);
+      const activeMemory =
+        memory.active || memory.used - (memory.buffcache || 0);
       const memoryPercent = Math.round((activeMemory / memory.total) * 100);
 
       const cpuPercent = Math.round(cpu.currentLoad);
-      
+
       // Calculate total CPU usage of all processes
-      const totalProcessCpu = processes.list.reduce((sum, p) => sum + (p.cpu || 0), 0);
-      
+      const totalProcessCpu = processes.list.reduce(
+        (sum, p) => sum + (p.cpu || 0),
+        0
+      );
+
       // Calculate VS Code CPU as percentage of all process CPU usage
-      const vscodeCpuRelative = totalProcessCpu > 0 
-        ? Math.round((vscodeCpu / totalProcessCpu) * 100)
-        : 0;
+      const vscodeCpuRelative =
+        totalProcessCpu > 0
+          ? Math.round((vscodeCpu / totalProcessCpu) * 100)
+          : 0;
       const vscodeCpuPercent = Math.min(vscodeCpuRelative, 100);
-      
+
       const vscodeMemoryMBRounded = Math.round(vscodeMemoryMB);
 
       const totalRx = networkStats.reduce(
@@ -152,13 +230,48 @@ export class SystemMonitor {
       const totalWriteSec = disksIO.wIO || 0;
 
       addToHistory(this.historyData, "cpu", cpuPercent, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "memory", memoryPercent, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "vscodeCpu", vscodeCpuPercent, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "vscodeMemory", vscodeMemoryMBRounded, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "networkDown", totalRx / 1024, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "networkUp", totalTx / 1024, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "diskRead", totalReadSec, this.HISTORY_LENGTH);
-      addToHistory(this.historyData, "diskWrite", totalWriteSec, this.HISTORY_LENGTH);
+      addToHistory(
+        this.historyData,
+        "memory",
+        memoryPercent,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "vscodeCpu",
+        vscodeCpuPercent,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "vscodeMemory",
+        vscodeMemoryMBRounded,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "networkDown",
+        totalRx / 1024,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "networkUp",
+        totalTx / 1024,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "diskRead",
+        totalReadSec,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "diskWrite",
+        totalWriteSec,
+        this.HISTORY_LENGTH
+      );
 
       this.updateStatusBarItems(statusBarItems, {
         cpuPercent,
@@ -206,25 +319,33 @@ export class SystemMonitor {
     }
   ): void {
     statusBarItems.cpu.text = `$(pulse) ${data.cpuPercent}%`;
-    statusBarItems.cpu.tooltip = `System CPU Usage: ${data.cpuPercent}%\n${generateMiniGraph(
+    statusBarItems.cpu.tooltip = `System CPU Usage: ${
+      data.cpuPercent
+    }%\n${generateMiniGraph(
       this.historyData.cpu
     )}\nClick to focus System Resources view`;
     statusBarItems.cpu.color = undefined;
 
     statusBarItems.memory.text = `$(database) ${data.memoryPercent}%`;
-    statusBarItems.memory.tooltip = `System Memory Usage (Active): ${data.memoryPercent}%\n${generateMiniGraph(
+    statusBarItems.memory.tooltip = `System Memory Usage (Active): ${
+      data.memoryPercent
+    }%\n${generateMiniGraph(
       this.historyData.memory
     )}\nClick to focus System Resources view`;
     statusBarItems.memory.color = undefined;
 
     statusBarItems.vscodeCpu.text = `$(code) ${data.vscodeCpuPercent}%`;
-    statusBarItems.vscodeCpu.tooltip = `VS Code CPU Usage: ${data.vscodeCpuPercent}% of all process CPU\n${generateMiniGraph(
+    statusBarItems.vscodeCpu.tooltip = `VS Code CPU Usage: ${
+      data.vscodeCpuPercent
+    }% of all process CPU\n${generateMiniGraph(
       this.historyData.vscodeCpu
     )}\nClick to focus System Resources view`;
     statusBarItems.vscodeCpu.color = undefined;
 
     statusBarItems.vscodeMemory.text = `$(gear) ${data.vscodeMemoryMBRounded}MB`;
-    statusBarItems.vscodeMemory.tooltip = `VS Code Memory Usage: ${data.vscodeMemoryMBRounded}MB\n${generateMiniGraph(
+    statusBarItems.vscodeMemory.tooltip = `VS Code Memory Usage: ${
+      data.vscodeMemoryMBRounded
+    }MB\n${generateMiniGraph(
       this.historyData.vscodeMemory,
       2000
     )}\nClick to focus System Resources view`;
@@ -249,9 +370,10 @@ export class SystemMonitor {
     )}R/${formatBytes(data.totalWriteSec)}W`;
     statusBarItems.disk.tooltip = `Disk Usage\nRead: ${formatBytes(
       data.totalReadSec
-    )}/s R${generateMiniGraph(this.historyData.diskRead, 100)}\nWrite: ${formatBytes(
-      data.totalWriteSec
-    )}/s W${generateMiniGraph(
+    )}/s R${generateMiniGraph(
+      this.historyData.diskRead,
+      100
+    )}\nWrite: ${formatBytes(data.totalWriteSec)}/s W${generateMiniGraph(
       this.historyData.diskWrite,
       100
     )}\nClick to focus System Resources view`;
@@ -263,7 +385,9 @@ export class SystemMonitor {
     if (uptimeDays > 0) {
       uptimeText = `${uptimeDays}d${uptimeHours % 24}h`;
     } else if (uptimeHours > 0) {
-      uptimeText = `${uptimeHours}h${Math.floor((data.uptimeSeconds % 3600) / 60)}m`;
+      uptimeText = `${uptimeHours}h${Math.floor(
+        (data.uptimeSeconds % 3600) / 60
+      )}m`;
     } else {
       uptimeText = `${Math.floor(data.uptimeSeconds / 60)}m`;
     }
@@ -294,7 +418,10 @@ export class SystemMonitor {
       (data.totalRx / maxNetworkSpeed) * 100,
       100
     );
-    const networkUpPercent = Math.min((data.totalTx / maxNetworkSpeed) * 100, 100);
+    const networkUpPercent = Math.min(
+      (data.totalTx / maxNetworkSpeed) * 100,
+      100
+    );
 
     const uptimeHours = Math.floor(data.uptimeSeconds / 3600);
     const uptimeDays = Math.floor(uptimeHours / 24);
@@ -302,7 +429,9 @@ export class SystemMonitor {
     if (uptimeDays > 0) {
       uptimeText = `${uptimeDays}d${uptimeHours % 24}h`;
     } else if (uptimeHours > 0) {
-      uptimeText = `${uptimeHours}h${Math.floor((data.uptimeSeconds % 3600) / 60)}m`;
+      uptimeText = `${uptimeHours}h${Math.floor(
+        (data.uptimeSeconds % 3600) / 60
+      )}m`;
     } else {
       uptimeText = `${Math.floor(data.uptimeSeconds / 60)}m`;
     }
@@ -335,5 +464,182 @@ export class SystemMonitor {
 
   public isMonitoringEnabled(): boolean {
     return this.monitoringEnabled;
+  }
+
+  private updateWithSystemData(
+    statusBarItems: StatusBarItems,
+    systemData: any
+  ): void {
+    if (!statusBarItems || !this.monitoringEnabled || !systemData) {
+      return;
+    }
+
+    try {
+      const {
+        cpu,
+        memory,
+        processes,
+        networkStats,
+        disksIO,
+        time,
+        vscodeProcesses,
+      } = systemData;
+
+      const vscodeCpu = vscodeProcesses.reduce(
+        (sum: number, p: any) => sum + (p.cpu || 0),
+        0
+      );
+      const vscodeMemory = vscodeProcesses.reduce(
+        (sum: number, p: any) => sum + (p.mem || 0),
+        0
+      );
+      const vscodeMemoryMB =
+        (vscodeMemory / 100) * (memory.total / (1024 * 1024));
+
+      const activeMemory =
+        memory.active || memory.used - (memory.buffcache || 0);
+      const memoryPercent = Math.round((activeMemory / memory.total) * 100);
+
+      const cpuPercent = Math.round(cpu.currentLoad);
+
+      // Calculate total CPU usage of all processes
+      const totalProcessCpu = processes.list.reduce(
+        (sum: number, p: any) => sum + (p.cpu || 0),
+        0
+      );
+
+      // Calculate VS Code CPU as percentage of all process CPU usage
+      const vscodeCpuRelative =
+        totalProcessCpu > 0
+          ? Math.round((vscodeCpu / totalProcessCpu) * 100)
+          : 0;
+      const vscodeCpuPercent = Math.min(vscodeCpuRelative, 100);
+
+      const vscodeMemoryMBRounded = Math.round(vscodeMemoryMB);
+
+      const totalRx = networkStats.reduce(
+        (sum: number, iface: any) => sum + (iface.rx_sec || 0),
+        0
+      );
+      const totalTx = networkStats.reduce(
+        (sum: number, iface: any) => sum + (iface.tx_sec || 0),
+        0
+      );
+
+      const totalReadSec = disksIO.rIO || 0;
+      const totalWriteSec = disksIO.wIO || 0;
+
+      addToHistory(this.historyData, "cpu", cpuPercent, this.HISTORY_LENGTH);
+      addToHistory(
+        this.historyData,
+        "memory",
+        memoryPercent,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "vscodeCpu",
+        vscodeCpuPercent,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "vscodeMemory",
+        vscodeMemoryMBRounded,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "networkDown",
+        totalRx / 1024,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "networkUp",
+        totalTx / 1024,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "diskRead",
+        totalReadSec,
+        this.HISTORY_LENGTH
+      );
+      addToHistory(
+        this.historyData,
+        "diskWrite",
+        totalWriteSec,
+        this.HISTORY_LENGTH
+      );
+
+      this.updateStatusBarItems(statusBarItems, {
+        cpuPercent,
+        memoryPercent,
+        vscodeCpuPercent,
+        vscodeMemoryMBRounded,
+        totalRx,
+        totalTx,
+        totalReadSec,
+        totalWriteSec,
+        uptimeSeconds: time.uptime || 0,
+      });
+
+      if (this.provider) {
+        this.sendDataToProvider({
+          cpu,
+          memory,
+          activeMemory,
+          vscodeCpu,
+          vscodeMemoryMBRounded,
+          totalRx,
+          totalTx,
+          totalReadSec,
+          totalWriteSec,
+          uptimeSeconds: time.uptime || 0,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating system info with shared data:", error);
+    }
+  }
+
+  public dispose(): void {
+    this.stopSystemMonitoring();
+  }
+
+  private static async collectSystemData(): Promise<any> {
+    try {
+      const [cpu, memory, processes, networkStats, disksIO, time] =
+        await Promise.all([
+          si.currentLoad(),
+          si.mem(),
+          si.processes(),
+          si.networkStats(),
+          si.disksIO(),
+          si.time(),
+        ]);
+
+      const vscodeProcesses = processes.list.filter(
+        (p) =>
+          p.name.toLowerCase().includes("code") ||
+          p.command.toLowerCase().includes("code") ||
+          p.name.toLowerCase().includes("electron") ||
+          p.name.toLowerCase().includes("vscode")
+      );
+
+      return {
+        cpu,
+        memory,
+        processes,
+        networkStats,
+        disksIO,
+        time,
+        vscodeProcesses,
+      };
+    } catch (error) {
+      console.error("Error collecting system data:", error);
+      return null;
+    }
   }
 }

@@ -9,22 +9,36 @@ let statusBarManager: StatusBarManager;
 let systemMonitor: SystemMonitor;
 let provider: SystemResourcesProvider;
 
-async function requestSystemPermissions(): Promise<boolean> {
+async function requestSystemPermissions(context: vscode.ExtensionContext): Promise<boolean> {
+  const permissionsGranted = context.globalState.get<boolean>('systemPermissionsGranted');
+  
+  if (permissionsGranted === true) {
+    return true;
+  }
+  
+  if (permissionsGranted === false) {
+    return false;
+  }
+  
   const result = await vscode.window.showInformationMessage(
-    "System Performance Extension needs access to system resources (CPU, memory, network) to provide monitoring functionality. Grant access?",
+    "System Performance Extension needs access to system resources (CPU, memory, network) to provide monitoring functionality. This permission is only requested once.",
     { modal: true },
     "Grant Access",
     "Deny"
   );
   
-  return result === "Grant Access";
+  const granted = result === "Grant Access";
+  
+  await context.globalState.update('systemPermissionsGranted', granted);
+  
+  return granted;
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  requestSystemPermissions().then((granted) => {
+  requestSystemPermissions(context).then((granted) => {
     if (!granted) {
       vscode.window.showErrorMessage(
-        "System Performance Extension requires system access permissions to monitor CPU, memory, and network usage. Please restart VS Code and grant permissions when prompted."
+        "System Performance Extension requires system access permissions to monitor CPU, memory, and network usage. You can enable this later in the extension settings or by reinstalling the extension."
       );
       return;
     }
@@ -75,11 +89,27 @@ export function activate(context: vscode.ExtensionContext) {
       }
     );
 
+    const resetPermissionsDisposable = vscode.commands.registerCommand(
+      "system-performance.resetPermissions",
+      async () => {
+        await context.globalState.update('systemPermissionsGranted', undefined);
+        vscode.window.showInformationMessage(
+          "System permissions have been reset. Please reload the window to be prompted again.",
+          "Reload Window"
+        ).then((selection) => {
+          if (selection === "Reload Window") {
+            vscode.commands.executeCommand("workbench.action.reloadWindow");
+          }
+        });
+      }
+    );
+
     context.subscriptions.push(
       showGraphDisposable,
       toggleGraphDisposable,
       refreshDisposable,
-      toggleMonitoringDisposable
+      toggleMonitoringDisposable,
+      resetPermissionsDisposable
     );
 
     if (statusBarItems) {
@@ -97,7 +127,9 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  systemMonitor.stopSystemMonitoring();
+  if (systemMonitor) {
+    systemMonitor.dispose();
+  }
   if (statusBarItems) {
     statusBarManager.disposeStatusBarItems(statusBarItems);
   }

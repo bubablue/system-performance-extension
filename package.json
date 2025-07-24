@@ -3,7 +3,7 @@
   "publisher": "bubablue00",
   "displayName": "System Performance",
   "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "icon": "icon.png",
   "keywords": [
     "system",
@@ -33,12 +33,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/system-performance-extension.git"
+    "url": "https://github.com/bubablue/system-performance-extension.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/system-performance-extension/issues"
+    "url": "https://github.com/bubablue/system-performance-extension/issues"
   },
-  "homepage": "https://github.com/yourusername/system-performance-extension#readme",
+  "homepage": "https://github.com/bubablue/system-performance-extension#readme",
   "license": "MIT",
   "activationEvents": [
     "onStartupFinished"
@@ -63,6 +63,10 @@
         "command": "system-performance.toggleMonitoring",
         "title": "Toggle Monitoring",
         "icon": "$(eye)"
+      },
+      {
+        "command": "system-performance.resetPermissions",
+        "title": "Reset System Permissions"
       }
     ],
     "views": {

@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="icon.png" alt="System Performance Monitor" width="100" height="100"/>
+  <img src="https://raw.githubusercontent.com/bubablue/system-performance-extension/master/icon.png" alt="System Performance Monitor" width="100" height="100"/>
   <br/>
   System Performance Monitor
 </h1>

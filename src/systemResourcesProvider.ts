@@ -122,8 +122,16 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
 
     await config.update("showCpu", true, vscode.ConfigurationTarget.Global);
     await config.update("showMemory", true, vscode.ConfigurationTarget.Global);
-    await config.update("showVscodeCpu", true, vscode.ConfigurationTarget.Global);
-    await config.update("showVscodeMemory", true, vscode.ConfigurationTarget.Global);
+    await config.update(
+      "showVscodeCpu",
+      true,
+      vscode.ConfigurationTarget.Global
+    );
+    await config.update(
+      "showVscodeMemory",
+      true,
+      vscode.ConfigurationTarget.Global
+    );
     await config.update("showNetwork", true, vscode.ConfigurationTarget.Global);
     await config.update(
       "updateInterval",
@@ -136,6 +144,58 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
+    let cssPath: vscode.Uri;
+    let jsPath: vscode.Uri;
+    let htmlPath: string;
+
+    const srcHtmlPath = path.join(
+      this._extensionUri.fsPath,
+      "src",
+      "webview.html"
+    );
+
+    if (fs.existsSync(srcHtmlPath)) {
+      cssPath = webview.asWebviewUri(
+        vscode.Uri.joinPath(this._extensionUri, "src", "webview.css")
+      );
+      jsPath = webview.asWebviewUri(
+        vscode.Uri.joinPath(this._extensionUri, "src", "webview.js")
+      );
+      htmlPath = srcHtmlPath;
+    } else {
+      const outHtmlPath = path.join(
+        this._extensionUri.fsPath,
+        "out",
+        "webview-template.js"
+      );
+      if (fs.existsSync(outHtmlPath)) {
+        cssPath = webview.asWebviewUri(
+          vscode.Uri.joinPath(this._extensionUri, "out", "webview-styles.js")
+        );
+        jsPath = webview.asWebviewUri(
+          vscode.Uri.joinPath(this._extensionUri, "out", "webview-scripts.js")
+        );
+        htmlPath = outHtmlPath;
+      } else {
+        return this.getInlineHtml(webview);
+      }
+    }
+
+    let htmlContent: string;
+    try {
+      htmlContent = fs.readFileSync(htmlPath, "utf8");
+    } catch (readError) {
+      console.error(`Failed to read webview HTML file: ${htmlPath}`, readError);
+      return this.getInlineHtml(webview);
+    }
+
+    htmlContent = htmlContent.replace("{{cssPath}}", cssPath.toString());
+    htmlContent = htmlContent.replace("{{jsPath}}", jsPath.toString());
+
+    return htmlContent;
+  }
+
+  private getInlineHtml(webview: vscode.Webview): string {
     const cssPath = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "src", "webview.css")
     );
@@ -143,16 +203,34 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, "src", "webview.js")
     );
 
-    const htmlPath = path.join(
-      this._extensionUri.fsPath,
-      "src",
-      "webview.html"
-    );
-    let htmlContent = fs.readFileSync(htmlPath, "utf8");
-
-    htmlContent = htmlContent.replace("{{cssPath}}", cssPath.toString());
-    htmlContent = htmlContent.replace("{{jsPath}}", jsPath.toString());
-
-    return htmlContent;
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>System Performance</title>
+          <link rel="stylesheet" href="${cssPath}">
+          <style>
+            body {
+              padding: 10px;
+              font-family: var(--vscode-font-family);
+              background-color: var(--vscode-editor-background);
+              color: var(--vscode-editor-foreground);
+            }
+          </style>
+      </head>
+      <body>
+          <div id="container">
+              <div id="performance-dashboard">
+                  <h3>System Performance Monitor</h3>
+                  <div id="charts-container"></div>
+                  <div id="settings-panel" style="display: none;"></div>
+              </div>
+          </div>
+          <script src="${jsPath}"></script>
+      </body>
+      </html>
+    `;
   }
 }
