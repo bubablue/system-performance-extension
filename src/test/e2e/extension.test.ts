@@ -147,7 +147,6 @@ suite("System Performance Extension E2E Tests", () => {
   test("Status bar configuration should work", async () => {
     const config = vscode.workspace.getConfiguration("systemGraph");
 
-    // First, ensure we start with a known state
     await config.update(
       "statusBarEnabled",
       true,
@@ -162,10 +161,8 @@ suite("System Performance Extension E2E Tests", () => {
       vscode.ConfigurationTarget.Global
     );
 
-    // Wait longer for configuration to propagate
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Get fresh config instance to ensure we have latest values
     const freshConfig = vscode.workspace.getConfiguration("systemGraph");
     const updatedValue = freshConfig.get("statusBarEnabled");
     
