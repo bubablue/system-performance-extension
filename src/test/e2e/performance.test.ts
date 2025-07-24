@@ -1,19 +1,14 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
+import { TestHelper } from "./testHelper";
 
 suite("System Performance Extension Performance Tests", () => {
-  let extension: vscode.Extension<any>;
-
   setup(async () => {
-    extension = vscode.extensions.getExtension(
-      "bubablue00.system-performance"
-    )!;
+    await TestHelper.setupExtensionForTesting();
+  });
 
-    if (!extension.isActive) {
-      await extension.activate();
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+  teardown(async () => {
+    await TestHelper.cleanupExtension();
   });
 
   test("Extension activation should be fast", async () => {
@@ -99,7 +94,7 @@ suite("System Performance Extension Performance Tests", () => {
 
     await config.update(
       "updateInterval",
-      2000,
+      4000,
       vscode.ConfigurationTarget.Global
     );
   });
@@ -137,7 +132,7 @@ suite("System Performance Extension Performance Tests", () => {
       config.update("updateInterval", 1000, vscode.ConfigurationTarget.Global),
       config.update("showCpu", true, vscode.ConfigurationTarget.Global),
       config.update("showMemory", true, vscode.ConfigurationTarget.Global),
-      config.update("updateInterval", 2000, vscode.ConfigurationTarget.Global),
+      config.update("updateInterval", 4000, vscode.ConfigurationTarget.Global),
     ];
 
     await Promise.all(configChanges);

@@ -1,19 +1,16 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
+import { TestHelper } from "./testHelper";
 
 suite("System Performance Extension E2E Tests", () => {
   let extension: vscode.Extension<any>;
 
   setup(async () => {
-    extension = vscode.extensions.getExtension(
-      "bubablue00.system-performance"
-    )!;
+    extension = await TestHelper.setupExtensionForTesting();
+  });
 
-    if (!extension.isActive) {
-      await extension.activate();
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+  teardown(async () => {
+    await TestHelper.cleanupExtension();
   });
 
   test("Extension should be present and activated", async () => {
@@ -87,8 +84,8 @@ suite("System Performance Extension E2E Tests", () => {
     );
     assert.strictEqual(
       config.get("updateInterval"),
-      2000,
-      "updateInterval should default to 2000"
+      4000,
+      "updateInterval should default to 4000"
     );
   });
 
@@ -152,15 +149,26 @@ suite("System Performance Extension E2E Tests", () => {
 
     await config.update(
       "statusBarEnabled",
+      true,
+      vscode.ConfigurationTarget.Global
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Now test disabling
+    await config.update(
+      "statusBarEnabled",
       false,
       vscode.ConfigurationTarget.Global
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const updatedValue = config.get("statusBarEnabled");
+    const freshConfig = vscode.workspace.getConfiguration("systemGraph");
+    const updatedValue = freshConfig.get("statusBarEnabled");
+    
     assert.strictEqual(updatedValue, false, "Status bar should be disabled");
 
+    // Restore to true for cleanup
     await config.update(
       "statusBarEnabled",
       true,
@@ -173,7 +181,7 @@ suite("System Performance Extension E2E Tests", () => {
   test("System information should be collected", async () => {
     await vscode.commands.executeCommand("system-performance.refresh");
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
 
     assert.ok(true, "System information collection works");
   });

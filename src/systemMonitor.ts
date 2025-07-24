@@ -25,6 +25,7 @@ export class SystemMonitor {
   private static lastUpdateTime = 0;
   private static isUpdating = false;
   private static lastSystemData: any = null;
+  private readonly statusBarInstances: StatusBarItems[] = [];
 
   constructor(
     private readonly statusBarManager: StatusBarManager,
@@ -33,28 +34,43 @@ export class SystemMonitor {
     SystemMonitor.activeMonitors.add(this);
   }
 
+  public addStatusBarInstance(statusBarItems: StatusBarItems): void {
+    if (!this.statusBarInstances.includes(statusBarItems)) {
+      this.statusBarInstances.push(statusBarItems);
+    }
+  }
+
+  public removeStatusBarInstance(statusBarItems: StatusBarItems): void {
+    const index = this.statusBarInstances.indexOf(statusBarItems);
+    if (index > -1) {
+      this.statusBarInstances.splice(index, 1);
+    }
+  }
+
   public startSystemMonitoring(statusBarItems: StatusBarItems): void {
+    this.addStatusBarInstance(statusBarItems);
+
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
       this.updateInterval = undefined;
     }
 
     const config = vscode.workspace.getConfiguration("systemGraph");
-    const updateIntervalMs = config.get("updateInterval", 2000);
+    const updateIntervalMs = config.get("updateInterval", 4000);
 
     if (!this.isPaused && this.monitoringEnabled) {
-      SystemMonitor.globalInterval ??= setInterval(async () => {
+      if (SystemMonitor.globalInterval) {
+        clearInterval(SystemMonitor.globalInterval);
+        SystemMonitor.globalInterval = undefined;
+      }
+
+      SystemMonitor.globalInterval = setInterval(async () => {
         if (SystemMonitor.isUpdating) {
           return;
         }
 
-        const now = Date.now();
-        if (now - SystemMonitor.lastUpdateTime < updateIntervalMs - 200) {
-          return;
-        }
-
         SystemMonitor.isUpdating = true;
-        SystemMonitor.lastUpdateTime = now;
+        SystemMonitor.lastUpdateTime = Date.now();
 
         try {
           const systemData = await SystemMonitor.collectSystemData();
@@ -62,10 +78,9 @@ export class SystemMonitor {
 
           SystemMonitor.activeMonitors.forEach((monitor) => {
             if (monitor.monitoringEnabled && !monitor.isPaused) {
-              const items = monitor.statusBarManager.getStatusBarItems();
-              if (items) {
+              monitor.statusBarInstances.forEach((items) => {
                 monitor.updateWithSystemData(items, systemData);
-              }
+              });
             }
           });
         } catch (error) {
@@ -117,7 +132,7 @@ export class SystemMonitor {
     }
   }
 
-  public toggleMonitoring(statusBarItems: StatusBarItems): void {
+  public toggleMonitoring(_statusBarItems: StatusBarItems): void {
     this.isPaused = !this.isPaused;
     const config = vscode.workspace.getConfiguration("systemGraph");
     config.update(
@@ -138,7 +153,10 @@ export class SystemMonitor {
       vscode.window.showInformationMessage("System monitoring paused");
 
       this.monitoringEnabled = false;
-      this.statusBarManager.hideAllStatusBarItems(statusBarItems);
+
+      this.statusBarInstances.forEach((items) => {
+        this.statusBarManager.hideAllStatusBarItems(items);
+      });
 
       const anyActiveMonitor = Array.from(SystemMonitor.activeMonitors).some(
         (monitor) => monitor.monitoringEnabled && !monitor.isPaused
@@ -154,8 +172,14 @@ export class SystemMonitor {
       vscode.window.showInformationMessage("System monitoring resumed");
 
       this.monitoringEnabled = true;
-      this.startSystemMonitoring(statusBarItems);
-      this.statusBarManager.updateStatusBarVisibility(statusBarItems);
+
+      if (this.statusBarInstances.length > 0) {
+        this.startSystemMonitoring(this.statusBarInstances[0]);
+      }
+
+      this.statusBarInstances.forEach((items) => {
+        this.statusBarManager.updateStatusBarVisibility(items);
+      });
     }
   }
 
@@ -202,13 +226,11 @@ export class SystemMonitor {
 
       const cpuPercent = Math.round(cpu.currentLoad);
 
-      // Calculate total CPU usage of all processes
       const totalProcessCpu = processes.list.reduce(
         (sum, p) => sum + (p.cpu || 0),
         0
       );
 
-      // Calculate VS Code CPU as percentage of all process CPU usage
       const vscodeCpuRelative =
         totalProcessCpu > 0
           ? Math.round((vscodeCpu / totalProcessCpu) * 100)
@@ -347,7 +369,7 @@ export class SystemMonitor {
       data.vscodeMemoryMBRounded
     }MB\n${generateMiniGraph(
       this.historyData.vscodeMemory,
-      2000
+      4000
     )}\nClick to focus System Resources view`;
     statusBarItems.vscodeMemory.color = undefined;
 

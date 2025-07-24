@@ -127,7 +127,7 @@
         },
         "systemGraph.updateInterval": {
           "type": "number",
-          "default": 2000,
+          "default": 4000,
           "minimum": 500,
           "maximum": 10000,
           "description": "Update interval in milliseconds"
