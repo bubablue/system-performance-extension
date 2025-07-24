@@ -3,7 +3,7 @@
   "publisher": "bubablue00",
   "displayName": "System Performance",
   "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "system",
     "performance",
