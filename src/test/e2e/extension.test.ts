@@ -13,7 +13,7 @@ suite("System Performance Extension E2E Tests", () => {
       await extension.activate();
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
   });
 
   test("Extension should be present and activated", async () => {
@@ -87,8 +87,8 @@ suite("System Performance Extension E2E Tests", () => {
     );
     assert.strictEqual(
       config.get("updateInterval"),
-      2000,
-      "updateInterval should default to 2000"
+      4000,
+      "updateInterval should default to 4000"
     );
   });
 
@@ -173,7 +173,7 @@ suite("System Performance Extension E2E Tests", () => {
   test("System information should be collected", async () => {
     await vscode.commands.executeCommand("system-performance.refresh");
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
 
     assert.ok(true, "System information collection works");
   });

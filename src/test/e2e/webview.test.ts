@@ -13,7 +13,7 @@ suite("System Performance Webview E2E Tests", () => {
       await extension.activate();
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
   });
 
   test("Webview should be creatable", async () => {
@@ -50,7 +50,7 @@ suite("System Performance Webview E2E Tests", () => {
 
     await config.update(
       "updateInterval",
-      2000,
+      4000,
       vscode.ConfigurationTarget.Global
     );
 

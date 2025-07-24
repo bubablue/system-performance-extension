@@ -13,7 +13,7 @@ suite("System Performance Extension Performance Tests", () => {
       await extension.activate();
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
   });
 
   test("Extension activation should be fast", async () => {
@@ -99,7 +99,7 @@ suite("System Performance Extension Performance Tests", () => {
 
     await config.update(
       "updateInterval",
-      2000,
+      4000,
       vscode.ConfigurationTarget.Global
     );
   });
@@ -137,7 +137,7 @@ suite("System Performance Extension Performance Tests", () => {
       config.update("updateInterval", 1000, vscode.ConfigurationTarget.Global),
       config.update("showCpu", true, vscode.ConfigurationTarget.Global),
       config.update("showMemory", true, vscode.ConfigurationTarget.Global),
-      config.update("updateInterval", 2000, vscode.ConfigurationTarget.Global),
+      config.update("updateInterval", 4000, vscode.ConfigurationTarget.Global),
     ];
 
     await Promise.all(configChanges);
