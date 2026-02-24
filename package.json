@@ -120,6 +120,16 @@
           "default": true,
           "description": "Show network I/O bar"
         },
+        "systemGraph.showDisk": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show disk I/O bar"
+        },
+        "systemGraph.showUptime": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show system uptime bar"
+        },
         "systemGraph.statusBarEnabled": {
           "type": "boolean",
           "default": true,

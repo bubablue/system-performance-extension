@@ -46,5 +46,7 @@ export interface WebviewSettings {
   showVscodeCpu: boolean;
   showVscodeMemory: boolean;
   showNetwork: boolean;
+  showDisk: boolean;
+  showUptime: boolean;
   updateInterval: number;
 }

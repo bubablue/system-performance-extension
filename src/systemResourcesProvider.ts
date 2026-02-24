@@ -71,6 +71,8 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
         showVscodeCpu: config.get("showVscodeCpu", true),
         showVscodeMemory: config.get("showVscodeMemory", true),
         showNetwork: config.get("showNetwork", true),
+        showDisk: config.get("showDisk", true),
+        showUptime: config.get("showUptime", true),
         updateInterval: config.get("updateInterval", 2000),
       };
       this._view.webview.postMessage({
@@ -109,6 +111,16 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
       vscode.ConfigurationTarget.Global
     );
     await config.update(
+      "showDisk",
+      settings.showDisk,
+      vscode.ConfigurationTarget.Global
+    );
+    await config.update(
+      "showUptime",
+      settings.showUptime,
+      vscode.ConfigurationTarget.Global
+    );
+    await config.update(
       "updateInterval",
       settings.updateInterval,
       vscode.ConfigurationTarget.Global
@@ -133,6 +145,8 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
       vscode.ConfigurationTarget.Global
     );
     await config.update("showNetwork", true, vscode.ConfigurationTarget.Global);
+    await config.update("showDisk", true, vscode.ConfigurationTarget.Global);
+    await config.update("showUptime", true, vscode.ConfigurationTarget.Global);
     await config.update(
       "updateInterval",
       2000,

@@ -133,6 +133,8 @@ Download the latest `.vsix` file from [releases](https://github.com/bubablue/sys
 | **VS Code CPU** | ✅ | ✅ | ✅ |
 | **VS Code Memory** | ✅ | ✅ | ✅ |
 | **Network I/O** | ✅ | ✅ | ✅ |
+| **Disk I/O** | ✅ | ➖ | ✅ |
+| **System Uptime** | ✅ | ➖ | ✅ |
 
 </div>
 
@@ -162,6 +164,8 @@ Customize the extension behavior through VS Code settings:
   "systemGraph.showVscodeCpu": true,        // Show VS Code CPU usage bar
   "systemGraph.showVscodeMemory": true,     // Show VS Code memory usage bar
   "systemGraph.showNetwork": true,          // Show network I/O bar
+  "systemGraph.showDisk": true,             // Show disk I/O bar
+  "systemGraph.showUptime": true,           // Show system uptime bar
   "systemGraph.statusBarEnabled": true,     // Enable/disable status bar monitoring
   "systemGraph.updateInterval": 2000        // Update interval in milliseconds (500-10000)
 }

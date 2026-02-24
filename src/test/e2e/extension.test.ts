@@ -78,6 +78,16 @@ suite("System Performance Extension E2E Tests", () => {
       "showNetwork should default to true"
     );
     assert.strictEqual(
+      config.get("showDisk"),
+      true,
+      "showDisk should default to true"
+    );
+    assert.strictEqual(
+      config.get("showUptime"),
+      true,
+      "showUptime should default to true"
+    );
+    assert.strictEqual(
       config.get("statusBarEnabled"),
       true,
       "statusBarEnabled should default to true"
