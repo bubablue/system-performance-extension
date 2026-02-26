@@ -301,8 +301,6 @@ document.addEventListener("DOMContentLoaded", function () {
         showVscodeCpu: document.getElementById("show-vscode-cpu").checked,
         showVscodeMemory: document.getElementById("show-vscode-memory").checked,
         showNetwork: document.getElementById("show-network").checked,
-        showDisk: document.getElementById("show-disk").checked,
-        showUptime: document.getElementById("show-uptime").checked,
         updateInterval: parseInt(
           document.getElementById("update-interval").value
         ),
@@ -334,8 +332,6 @@ function populateSettingsForm(settings) {
   const showVscodeCpu = document.getElementById("show-vscode-cpu");
   const showVscodeMemory = document.getElementById("show-vscode-memory");
   const showNetwork = document.getElementById("show-network");
-  const showDisk = document.getElementById("show-disk");
-  const showUptime = document.getElementById("show-uptime");
   const updateInterval = document.getElementById("update-interval");
 
   if (showCpu) {
@@ -352,12 +348,6 @@ function populateSettingsForm(settings) {
   }
   if (showNetwork) {
     showNetwork.checked = settings.showNetwork;
-  }
-  if (showDisk) {
-    showDisk.checked = settings.showDisk;
-  }
-  if (showUptime) {
-    showUptime.checked = settings.showUptime;
   }
   if (updateInterval) {
     updateInterval.value = settings.updateInterval;

@@ -120,15 +120,40 @@
           "default": true,
           "description": "Show network I/O bar"
         },
-        "systemGraph.showDisk": {
+        "systemGraph.statusBar.showCpu": {
           "type": "boolean",
           "default": true,
-          "description": "Show disk I/O bar"
+          "description": "Show system CPU usage in the status bar"
         },
-        "systemGraph.showUptime": {
+        "systemGraph.statusBar.showMemory": {
           "type": "boolean",
           "default": true,
-          "description": "Show system uptime bar"
+          "description": "Show system memory usage in the status bar"
+        },
+        "systemGraph.statusBar.showVscodeCpu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code CPU usage in the status bar"
+        },
+        "systemGraph.statusBar.showVscodeMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code memory usage in the status bar"
+        },
+        "systemGraph.statusBar.showNetwork": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show network I/O in the status bar"
+        },
+        "systemGraph.statusBar.showDisk": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show disk I/O in the status bar"
+        },
+        "systemGraph.statusBar.showUptime": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show system uptime in the status bar"
         },
         "systemGraph.statusBarEnabled": {
           "type": "boolean",

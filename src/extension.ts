@@ -152,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
       toggleMonitoringDisposable,
       resetPermissionsDisposable,
       vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration("systemGraph")) {
+        if (e.affectsConfiguration("systemGraph.statusBar")) {
           if (statusBarItems) {
             statusBarManager.updateStatusBarVisibility(statusBarItems);
           }

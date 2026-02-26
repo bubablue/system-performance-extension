@@ -53,7 +53,7 @@ export class StatusBarManager {
       return;
     }
 
-    const config = vscode.workspace.getConfiguration("systemGraph");
+    const config = vscode.workspace.getConfiguration("systemGraph.statusBar");
 
     if (config.get("showCpu", true)) {
       statusBarItems.cpu.show();

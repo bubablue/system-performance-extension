@@ -78,16 +78,6 @@ suite("System Performance Extension E2E Tests", () => {
       "showNetwork should default to true"
     );
     assert.strictEqual(
-      config.get("showDisk"),
-      true,
-      "showDisk should default to true"
-    );
-    assert.strictEqual(
-      config.get("showUptime"),
-      true,
-      "showUptime should default to true"
-    );
-    assert.strictEqual(
       config.get("statusBarEnabled"),
       true,
       "statusBarEnabled should default to true"
@@ -96,6 +86,44 @@ suite("System Performance Extension E2E Tests", () => {
       config.get("updateInterval"),
       4000,
       "updateInterval should default to 4000"
+    );
+
+    const statusBarConfig = vscode.workspace.getConfiguration("systemGraph.statusBar");
+
+    assert.strictEqual(
+      statusBarConfig.get("showCpu"),
+      true,
+      "statusBar.showCpu should default to true"
+    );
+    assert.strictEqual(
+      statusBarConfig.get("showMemory"),
+      true,
+      "statusBar.showMemory should default to true"
+    );
+    assert.strictEqual(
+      statusBarConfig.get("showVscodeCpu"),
+      true,
+      "statusBar.showVscodeCpu should default to true"
+    );
+    assert.strictEqual(
+      statusBarConfig.get("showVscodeMemory"),
+      true,
+      "statusBar.showVscodeMemory should default to true"
+    );
+    assert.strictEqual(
+      statusBarConfig.get("showNetwork"),
+      true,
+      "statusBar.showNetwork should default to true"
+    );
+    assert.strictEqual(
+      statusBarConfig.get("showDisk"),
+      true,
+      "statusBar.showDisk should default to true"
+    );
+    assert.strictEqual(
+      statusBarConfig.get("showUptime"),
+      true,
+      "statusBar.showUptime should default to true"
     );
   });
 

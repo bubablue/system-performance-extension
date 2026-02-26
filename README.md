@@ -159,24 +159,30 @@ Customize the extension behavior through VS Code settings:
 
 ```json
 {
-  "systemGraph.showCpu": true,              // Show CPU usage bar
-  "systemGraph.showMemory": true,           // Show memory usage bar  
-  "systemGraph.showVscodeCpu": true,        // Show VS Code CPU usage bar
-  "systemGraph.showVscodeMemory": true,     // Show VS Code memory usage bar
-  "systemGraph.showNetwork": true,          // Show network I/O bar
-  "systemGraph.showDisk": true,             // Show disk I/O bar
-  "systemGraph.showUptime": true,           // Show system uptime bar
-  "systemGraph.statusBarEnabled": true,     // Enable/disable status bar monitoring
-  "systemGraph.updateInterval": 2000        // Update interval in milliseconds (500-10000)
+  "systemGraph.showCpu": true,                    // Show CPU graph bar in the sidebar panel
+  "systemGraph.showMemory": true,                 // Show memory graph bar in the sidebar panel
+  "systemGraph.showVscodeCpu": true,              // Show VS Code CPU graph bar in the sidebar panel
+  "systemGraph.showVscodeMemory": true,           // Show VS Code memory graph bar in the sidebar panel
+  "systemGraph.showNetwork": true,                // Show network I/O graph bar in the sidebar panel
+  "systemGraph.statusBarEnabled": true,           // Enable/disable all status bar monitoring
+  "systemGraph.updateInterval": 2000,             // Update interval in milliseconds (500-10000)
+
+  "systemGraph.statusBar.showCpu": true,          // Show system CPU in the status bar
+  "systemGraph.statusBar.showMemory": true,       // Show system memory in the status bar
+  "systemGraph.statusBar.showVscodeCpu": true,    // Show VS Code CPU in the status bar
+  "systemGraph.statusBar.showVscodeMemory": true, // Show VS Code memory in the status bar
+  "systemGraph.statusBar.showNetwork": true,      // Show network I/O in the status bar
+  "systemGraph.statusBar.showDisk": true,         // Show disk I/O in the status bar
+  "systemGraph.statusBar.showUptime": true        // Show system uptime in the status bar
 }
 ```
 
 ### 🎛️ **Configuration Options**
 
-- **Individual Metrics Control** - Toggle specific metrics on/off
-- **Status Bar Display** - Enable/disable status bar integration
+- **Sidebar Panel Metrics** - Toggle which graph bars appear in the System Resources panel (`systemGraph.showCpu`, etc.)
+- **Status Bar Items** - Toggle individual status bar items via `systemGraph.statusBar.*` settings
+- **Status Bar Display** - Enable/disable all status bar monitoring at once (`systemGraph.statusBarEnabled`)
 - **Update Frequency** - Customize refresh interval (0.5-10 seconds)
-- **Visual Customization** - Control which graphs and bars are displayed
 
 ## 🛠️ Development & Contributing
 
