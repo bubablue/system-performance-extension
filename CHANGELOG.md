@@ -1,8 +1,20 @@
 # Changelog
 
-## [0.0.5](https://github.com/bubablue/system-performance-extension/tree/0.0.5) (2025-07-24)
+## [0.1.0](https://github.com/bubablue/system-performance-extension/tree/0.1.0) (2026-03-17)
 
-[Full Changelog](https://github.com/bubablue/system-performance-extension/compare/v0.0.4...0.0.5)
+[Full Changelog](https://github.com/bubablue/system-performance-extension/compare/v0.0.5...0.1.0)
+
+**Closed issues:**
+
+- Feature request: Add settings to toggle visibility of each status bar item [\#4](https://github.com/bubablue/system-performance-extension/issues/4)
+
+**Merged pull requests:**
+
+- Add per-item status bar visibility toggles via separate settings namespace [\#5](https://github.com/bubablue/system-performance-extension/pull/5) ([Copilot](https://github.com/apps/copilot-swe-agent))
+
+## [v0.0.5](https://github.com/bubablue/system-performance-extension/tree/v0.0.5) (2025-07-24)
+
+[Full Changelog](https://github.com/bubablue/system-performance-extension/compare/v0.0.4...v0.0.5)
 
 **Merged pull requests:**
 
