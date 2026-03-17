@@ -3,7 +3,7 @@
   "publisher": "bubablue00",
   "displayName": "System Performance",
   "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "icon": "icon.png",
   "keywords": [
     "system",
@@ -18,7 +18,7 @@
     "metrics"
   ],
   "engines": {
-    "vscode": "^1.102.0"
+    "vscode": "^1.110.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -120,6 +120,41 @@
           "default": true,
           "description": "Show network I/O bar"
         },
+        "systemGraph.statusBar.showCpu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show system CPU usage in the status bar"
+        },
+        "systemGraph.statusBar.showMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show system memory usage in the status bar"
+        },
+        "systemGraph.statusBar.showVscodeCpu": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code CPU usage in the status bar"
+        },
+        "systemGraph.statusBar.showVscodeMemory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code memory usage in the status bar"
+        },
+        "systemGraph.statusBar.showNetwork": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show network I/O in the status bar"
+        },
+        "systemGraph.statusBar.showDisk": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show disk I/O in the status bar"
+        },
+        "systemGraph.statusBar.showUptime": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show system uptime in the status bar"
+        },
         "systemGraph.statusBarEnabled": {
           "type": "boolean",
           "default": true,
@@ -148,18 +183,18 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.102.0",
-    "@typescript-eslint/eslint-plugin": "^8.28.0",
-    "@typescript-eslint/parser": "^8.28.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.23.0",
-    "typescript": "^5.8.2",
-    "glob": "^10.3.10",
-    "mocha": "^10.2.0"
+    "@types/node": "25.5.0",
+    "@types/vscode": "^1.110.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^10.0.3",
+    "typescript": "^5.9.3",
+    "glob": "^13.0.6",
+    "mocha": "^11.7.5"
   },
   "dependencies": {
-    "systeminformation": "^5.27.7"
+    "systeminformation": "^5.31.4"
   }
 }

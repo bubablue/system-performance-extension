@@ -53,7 +53,7 @@ export class StatusBarManager {
       return;
     }
 
-    const config = vscode.workspace.getConfiguration("systemGraph");
+    const config = vscode.workspace.getConfiguration("systemGraph.statusBar");
 
     if (config.get("showCpu", true)) {
       statusBarItems.cpu.show();
@@ -85,8 +85,17 @@ export class StatusBarManager {
       statusBarItems.network.hide();
     }
 
-    statusBarItems.disk.show();
-    statusBarItems.uptime.show();
+    if (config.get("showDisk", true)) {
+      statusBarItems.disk.show();
+    } else {
+      statusBarItems.disk.hide();
+    }
+
+    if (config.get("showUptime", true)) {
+      statusBarItems.uptime.show();
+    } else {
+      statusBarItems.uptime.hide();
+    }
   }
 
   public hideAllStatusBarItems(statusBarItems: StatusBarItems): void {
