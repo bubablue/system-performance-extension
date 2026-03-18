@@ -3,7 +3,7 @@
   "publisher": "bubablue00",
   "displayName": "System Performance",
   "description": "Real-time system performance monitoring with animated CPU, memory, and resource usage graphs in VSCode",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "icon": "icon.png",
   "keywords": [
     "system",
@@ -18,7 +18,7 @@
     "metrics"
   ],
   "engines": {
-    "vscode": "^1.110.0"
+    "vscode": "^1.102.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -184,7 +184,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "25.5.0",
-    "@types/vscode": "^1.110.0",
+    "@types/vscode": "^1.102.0",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "@vscode/test-cli": "^0.0.12",
