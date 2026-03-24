@@ -111,6 +111,17 @@ body {
     box-shadow: 0 0 15px rgba(5, 150, 105, 0.4);
 }
 
+.latency-fill {
+    background: linear-gradient(to top, #2563eb, #60a5fa);
+    color: white;
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+}
+
+.latency-fill.high-latency {
+    background: linear-gradient(to top, #dc2626, #f87171);
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+}
+
 .percentage {
     font-size: 10px;
     font-weight: bold;

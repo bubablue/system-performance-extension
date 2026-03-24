@@ -168,7 +168,8 @@ export function activate(context: vscode.ExtensionContext) {
         statusBarItems.vscodeMemory,
         statusBarItems.network,
         statusBarItems.disk,
-        statusBarItems.uptime
+        statusBarItems.uptime,
+        statusBarItems.latency
       );
     }
   });

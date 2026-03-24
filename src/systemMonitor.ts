@@ -1,3 +1,4 @@
+import * as net from "net";
 import * as si from "systeminformation";
 import * as vscode from "vscode";
 import { StatusBarManager } from "./statusBarManager";
@@ -18,6 +19,7 @@ export class SystemMonitor {
     networkUp: [],
     diskRead: [],
     diskWrite: [],
+    latency: [],
   };
   private readonly HISTORY_LENGTH = 15;
   private static readonly activeMonitors = new Set<SystemMonitor>();
@@ -201,6 +203,25 @@ export class SystemMonitor {
           si.time(),
         ]);
 
+      let latencyMs = -1;
+      const isRemote = !!vscode.env.remoteName;
+      const latencyConfig = vscode.workspace.getConfiguration("systemGraph");
+      const showLatencyBar = latencyConfig.get("showLatency", true);
+      const showLatencyStatusBar = latencyConfig.get("statusBar.showLatency", true);
+      if (showLatencyBar || showLatencyStatusBar) {
+        const targetHost = latencyConfig.get<string>("latency.targetHost", "");
+        const targetPort = latencyConfig.get<number>("latency.targetPort", 443);
+        if (targetHost) {
+          latencyMs = await SystemMonitor.measureLatency(targetHost, targetPort);
+        } else {
+          try {
+            latencyMs = await si.inetLatency();
+          } catch {
+            latencyMs = -1;
+          }
+        }
+      }
+
       const vscodeProcesses = processes.list.filter(
         (p) =>
           p.name.toLowerCase().includes("code") ||
@@ -294,6 +315,14 @@ export class SystemMonitor {
         totalWriteSec,
         this.HISTORY_LENGTH
       );
+      if (latencyMs >= 0) {
+        addToHistory(
+          this.historyData,
+          "latency",
+          latencyMs,
+          this.HISTORY_LENGTH
+        );
+      }
 
       this.updateStatusBarItems(statusBarItems, {
         cpuPercent,
@@ -305,6 +334,8 @@ export class SystemMonitor {
         totalReadSec,
         totalWriteSec,
         uptimeSeconds: time.uptime || 0,
+        latencyMs,
+        isRemote,
       });
 
       if (this.provider) {
@@ -319,6 +350,8 @@ export class SystemMonitor {
           totalReadSec,
           totalWriteSec,
           uptimeSeconds: time.uptime || 0,
+          latencyMs,
+          isRemote,
         });
       }
     } catch (error) {
@@ -338,6 +371,8 @@ export class SystemMonitor {
       totalReadSec: number;
       totalWriteSec: number;
       uptimeSeconds: number;
+      latencyMs: number;
+      isRemote: boolean;
     }
   ): void {
     statusBarItems.cpu.text = `$(pulse) ${data.cpuPercent}%`;
@@ -416,6 +451,23 @@ export class SystemMonitor {
     statusBarItems.uptime.text = `$(clock) ${uptimeText}`;
     statusBarItems.uptime.tooltip = `System Uptime: ${uptimeText}`;
     statusBarItems.uptime.color = undefined;
+
+    if (data.latencyMs >= 0) {
+      const warningThreshold = vscode.workspace.getConfiguration("systemGraph").get<number>("latency.warningThreshold", 200);
+      const latencyColor = data.latencyMs > warningThreshold ? new vscode.ThemeColor("statusBarItem.warningBackground") : undefined;
+      const targetHost = vscode.workspace.getConfiguration("systemGraph").get<string>("latency.targetHost", "");
+      const latencyLabel = targetHost ? `Target: ${targetHost}` : (data.isRemote ? `Remote: ${vscode.env.remoteName}` : "Internet latency");
+      statusBarItems.latency.text = `$(broadcast) ${data.latencyMs}ms`;
+      statusBarItems.latency.tooltip = `Network Latency: ${data.latencyMs}ms\n${generateMiniGraph(
+        this.historyData.latency,
+        500
+      )}\n${latencyLabel}\nClick to focus System Resources view`;
+      statusBarItems.latency.backgroundColor = latencyColor;
+    } else {
+      statusBarItems.latency.text = `$(broadcast) N/A`;
+      statusBarItems.latency.tooltip = `Network Latency: Unable to measure`;
+      statusBarItems.latency.backgroundColor = undefined;
+    }
   }
 
   private sendDataToProvider(data: {
@@ -429,6 +481,8 @@ export class SystemMonitor {
     totalReadSec: number;
     totalWriteSec: number;
     uptimeSeconds: number;
+    latencyMs: number;
+    isRemote: boolean;
   }): void {
     const activeMemoryPercent = (data.activeMemory / data.memory.total) * 100;
     const usedMemoryPercent = (data.memory.used / data.memory.total) * 100;
@@ -475,6 +529,8 @@ export class SystemMonitor {
       diskRead: data.totalReadSec,
       diskWrite: data.totalWriteSec,
       uptime: uptimeText,
+      latency: data.latencyMs,
+      isRemote: data.isRemote,
     };
 
     this.provider.updateData(systemData);
@@ -505,6 +561,8 @@ export class SystemMonitor {
         disksIO,
         time,
         vscodeProcesses,
+        latency: latencyMs,
+        isRemote,
       } = systemData;
 
       const vscodeCpu = vscodeProcesses.reduce(
@@ -594,6 +652,14 @@ export class SystemMonitor {
         totalWriteSec,
         this.HISTORY_LENGTH
       );
+      if (latencyMs >= 0) {
+        addToHistory(
+          this.historyData,
+          "latency",
+          latencyMs,
+          this.HISTORY_LENGTH
+        );
+      }
 
       this.updateStatusBarItems(statusBarItems, {
         cpuPercent,
@@ -605,6 +671,8 @@ export class SystemMonitor {
         totalReadSec,
         totalWriteSec,
         uptimeSeconds: time.uptime || 0,
+        latencyMs: latencyMs ?? -1,
+        isRemote: isRemote ?? false,
       });
 
       if (this.provider) {
@@ -619,6 +687,8 @@ export class SystemMonitor {
           totalReadSec,
           totalWriteSec,
           uptimeSeconds: time.uptime || 0,
+          latencyMs: latencyMs ?? -1,
+          isRemote: isRemote ?? false,
         });
       }
     } catch (error) {
@@ -628,6 +698,33 @@ export class SystemMonitor {
 
   public dispose(): void {
     this.stopSystemMonitoring();
+  }
+
+  private static measureLatency(host: string, port: number = 443, timeout: number = 3000): Promise<number> {
+    return new Promise((resolve) => {
+      const start = Date.now();
+      const socket = new net.Socket();
+
+      socket.setTimeout(timeout);
+
+      socket.on("connect", () => {
+        const latency = Date.now() - start;
+        socket.destroy();
+        resolve(latency);
+      });
+
+      socket.on("timeout", () => {
+        socket.destroy();
+        resolve(-1);
+      });
+
+      socket.on("error", () => {
+        socket.destroy();
+        resolve(-1);
+      });
+
+      socket.connect(port, host);
+    });
   }
 
   private static async collectSystemData(): Promise<any> {
@@ -650,6 +747,25 @@ export class SystemMonitor {
           p.name.toLowerCase().includes("vscode")
       );
 
+      let latency = -1;
+      const isRemote = !!vscode.env.remoteName;
+      const latencyConfig = vscode.workspace.getConfiguration("systemGraph");
+      const showLatencyBar = latencyConfig.get("showLatency", true);
+      const showLatencyStatusBar = latencyConfig.get("statusBar.showLatency", true);
+      if (showLatencyBar || showLatencyStatusBar) {
+        const targetHost = latencyConfig.get<string>("latency.targetHost", "");
+        const targetPort = latencyConfig.get<number>("latency.targetPort", 443);
+        if (targetHost) {
+          latency = await SystemMonitor.measureLatency(targetHost, targetPort);
+        } else {
+          try {
+            latency = await si.inetLatency();
+          } catch {
+            latency = -1;
+          }
+        }
+      }
+
       return {
         cpu,
         memory,
@@ -658,6 +774,8 @@ export class SystemMonitor {
         disksIO,
         time,
         vscodeProcesses,
+        latency,
+        isRemote,
       };
     } catch (error) {
       console.error("Error collecting system data:", error);

@@ -8,6 +8,7 @@ export interface StatusBarItems {
   network: StatusBarItem;
   disk: StatusBarItem;
   uptime: StatusBarItem;
+  latency: StatusBarItem;
 }
 
 export interface HistoryData {
@@ -19,6 +20,7 @@ export interface HistoryData {
   networkUp: number[];
   diskRead: number[];
   diskWrite: number[];
+  latency: number[];
 }
 
 export interface SystemData {
@@ -38,6 +40,8 @@ export interface SystemData {
   diskRead: number;
   diskWrite: number;
   uptime: string;
+  latency: number;
+  isRemote: boolean;
 }
 
 export interface WebviewSettings {
@@ -46,5 +50,7 @@ export interface WebviewSettings {
   showVscodeCpu: boolean;
   showVscodeMemory: boolean;
   showNetwork: boolean;
+  showLatency: boolean;
   updateInterval: number;
+  warningThreshold: number;
 }

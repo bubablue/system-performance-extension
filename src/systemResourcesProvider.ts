@@ -71,7 +71,9 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
         showVscodeCpu: config.get("showVscodeCpu", true),
         showVscodeMemory: config.get("showVscodeMemory", true),
         showNetwork: config.get("showNetwork", true),
+        showLatency: config.get("showLatency", true),
         updateInterval: config.get("updateInterval", 2000),
+        warningThreshold: config.get("latency.warningThreshold", 200),
       };
       this._view.webview.postMessage({
         command: "currentSettings",
@@ -109,8 +111,18 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
       vscode.ConfigurationTarget.Global
     );
     await config.update(
+      "showLatency",
+      settings.showLatency,
+      vscode.ConfigurationTarget.Global
+    );
+    await config.update(
       "updateInterval",
       settings.updateInterval,
+      vscode.ConfigurationTarget.Global
+    );
+    await config.update(
+      "latency.warningThreshold",
+      settings.warningThreshold,
       vscode.ConfigurationTarget.Global
     );
 
@@ -133,9 +145,15 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
       vscode.ConfigurationTarget.Global
     );
     await config.update("showNetwork", true, vscode.ConfigurationTarget.Global);
+    await config.update("showLatency", true, vscode.ConfigurationTarget.Global);
     await config.update(
       "updateInterval",
       2000,
+      vscode.ConfigurationTarget.Global
+    );
+    await config.update(
+      "latency.warningThreshold",
+      200,
       vscode.ConfigurationTarget.Global
     );
 
