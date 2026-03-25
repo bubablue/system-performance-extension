@@ -13,6 +13,7 @@ export class StatusBarManager {
       network: vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 102),
       disk: vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 101),
       uptime: vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100),
+      latency: vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99),
     };
 
     this.statusBarItems.cpu.text = "$(pulse) 0%";
@@ -42,6 +43,10 @@ export class StatusBarManager {
     this.statusBarItems.uptime.text = "$(clock) --";
     this.statusBarItems.uptime.tooltip = "System Uptime";
     this.statusBarItems.uptime.command = "system-performance.toggleGraph";
+
+    this.statusBarItems.latency.text = "$(broadcast) --";
+    this.statusBarItems.latency.tooltip = "Network Latency";
+    this.statusBarItems.latency.command = "system-performance.toggleGraph";
 
     Object.values(this.statusBarItems).forEach((item) => item.show());
 
@@ -95,6 +100,12 @@ export class StatusBarManager {
       statusBarItems.uptime.show();
     } else {
       statusBarItems.uptime.hide();
+    }
+
+    if (config.get("showLatency", true)) {
+      statusBarItems.latency.show();
+    } else {
+      statusBarItems.latency.hide();
     }
   }
 

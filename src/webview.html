@@ -98,6 +98,20 @@
           </div>
           <div class="bar-value" id="network-value">0↓0↑</div>
         </div>
+
+        <div class="bar-item latency-bar-item" id="latency-bar-item">
+          <div class="bar-label">NET<br />PING</div>
+          <div class="bar-track">
+            <div
+              class="bar-fill latency-fill"
+              id="latency-fill"
+              style="height: 0%"
+            >
+              <div class="percentage" id="latency-percentage">0ms</div>
+            </div>
+          </div>
+          <div class="bar-value" id="latency-value">--</div>
+        </div>
       </div>
 
       <div id="settings-view" class="settings-panel" style="display: none">
@@ -125,6 +139,10 @@
             <label class="checkbox-item">
               <input type="checkbox" id="show-network" checked />
               <span>Network I/O</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="show-latency" checked />
+              <span>Network Latency</span>
             </label>
           </div>
         </div>

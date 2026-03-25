@@ -157,6 +157,31 @@ function handleDataUpdate(message) {
   updateText("total-memory", formatBytes(message.totalMemory));
   updateText("used-memory", formatBytes(message.usedMemory));
   updateText("uptime", message.uptime || "--");
+
+  if (message.latency >= 0) {
+    const latencyPercent = Math.min((message.latency / 500) * 100, 100);
+    updateBar(
+      "latency-fill",
+      "latency-value",
+      latencyPercent,
+      message.latency + "ms"
+    );
+    const shortLatency = Number.isInteger(message.latency) ? message.latency : parseFloat(message.latency.toFixed(1));
+    updateText("latency-percentage", shortLatency + "");
+
+    const latencyFill = document.getElementById("latency-fill");
+    if (latencyFill) {
+      const threshold = window._latencyWarningThreshold || 200;
+      if (message.latency > threshold) {
+        latencyFill.classList.add("high-latency");
+      } else {
+        latencyFill.classList.remove("high-latency");
+      }
+    }
+  } else {
+    updateBar("latency-fill", "latency-value", 0, "N/A");
+    updateText("latency-percentage", "N/A");
+  }
 }
 
 function handleMonitoringStateUpdate(message) {
@@ -208,6 +233,7 @@ function clearAllBars() {
     "vscode-cpu-fill",
     "vscode-memory-fill",
     "network-fill",
+    "latency-fill",
   ];
   const valueIds = [
     "cpu-value",
@@ -215,6 +241,7 @@ function clearAllBars() {
     "vscode-cpu-value",
     "vscode-memory-value",
     "network-value",
+    "latency-value",
   ];
   const percentageIds = [
     "cpu-percentage",
@@ -222,6 +249,7 @@ function clearAllBars() {
     "vscode-cpu-percentage",
     "vscode-memory-percentage",
     "network-percentage",
+    "latency-percentage",
   ];
 
   barIds.forEach((id) => {
@@ -258,6 +286,7 @@ window.addEventListener("message", (event) => {
   } else if (message.command === "updateMonitoringState") {
     handleMonitoringStateUpdate(message);
   } else if (message.command === "currentSettings") {
+    window._latencyWarningThreshold = message.settings.warningThreshold || 200;
     populateSettingsForm(message.settings);
   }
 });
@@ -301,9 +330,11 @@ document.addEventListener("DOMContentLoaded", function () {
         showVscodeCpu: document.getElementById("show-vscode-cpu").checked,
         showVscodeMemory: document.getElementById("show-vscode-memory").checked,
         showNetwork: document.getElementById("show-network").checked,
+        showLatency: document.getElementById("show-latency").checked,
         updateInterval: parseInt(
           document.getElementById("update-interval").value
         ),
+        warningThreshold: window._latencyWarningThreshold || 200,
       };
 
       vscode.postMessage({
@@ -332,6 +363,7 @@ function populateSettingsForm(settings) {
   const showVscodeCpu = document.getElementById("show-vscode-cpu");
   const showVscodeMemory = document.getElementById("show-vscode-memory");
   const showNetwork = document.getElementById("show-network");
+  const showLatency = document.getElementById("show-latency");
   const updateInterval = document.getElementById("update-interval");
 
   if (showCpu) {
@@ -349,6 +381,9 @@ function populateSettingsForm(settings) {
   if (showNetwork) {
     showNetwork.checked = settings.showNetwork;
   }
+  if (showLatency) {
+    showLatency.checked = settings.showLatency;
+  }
   if (updateInterval) {
     updateInterval.value = settings.updateInterval;
   }
@@ -364,7 +399,8 @@ function applyVisibilitySettings(settings) {
     { bar: barItems[1], show: settings.showMemory },
     { bar: barItems[2], show: settings.showVscodeCpu },
     { bar: barItems[3], show: settings.showVscodeMemory },
-    { bar: barItems[4], show: settings.showNetwork }
+    { bar: barItems[4], show: settings.showNetwork },
+    { bar: barItems[5], show: settings.showLatency }
   ];
   
   displaySettings.forEach(({ bar, show }) => {

@@ -120,6 +120,11 @@
           "default": true,
           "description": "Show network I/O bar"
         },
+        "systemGraph.showLatency": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show network latency bar"
+        },
         "systemGraph.statusBar.showCpu": {
           "type": "boolean",
           "default": true,
@@ -154,6 +159,30 @@
           "type": "boolean",
           "default": true,
           "description": "Show system uptime in the status bar"
+        },
+        "systemGraph.statusBar.showLatency": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show network latency in the status bar (remote host when connected remotely, internet latency when local)"
+        },
+        "systemGraph.latency.warningThreshold": {
+          "type": "number",
+          "default": 200,
+          "minimum": 10,
+          "maximum": 5000,
+          "description": "Latency threshold in ms above which a warning highlight is shown"
+        },
+        "systemGraph.latency.targetHost": {
+          "type": "string",
+          "default": "",
+          "description": "Custom host to measure latency against (e.g. 'myserver.com'). Leave empty to use default internet latency (ping to 8.8.8.8)"
+        },
+        "systemGraph.latency.targetPort": {
+          "type": "number",
+          "default": 443,
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Port to use when measuring latency to a custom target host"
         },
         "systemGraph.statusBarEnabled": {
           "type": "boolean",
