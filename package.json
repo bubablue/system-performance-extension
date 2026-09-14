@@ -166,6 +166,18 @@
           "minimum": 500,
           "maximum": 10000,
           "description": "Update interval in milliseconds"
+        },
+        "systemGraph.processUpdateInterval": {
+          "type": "number",
+          "default": 12000,
+          "minimum": 1000,
+          "maximum": 60000,
+          "description": "How often to re-read the process list, in milliseconds, used for the VS Code CPU and memory metrics. This is the most expensive query (a full WMI process walk on Windows), so it is polled less often than the other metrics. Values below the general update interval have no effect."
+        },
+        "systemGraph.windows.persistentPowerShell": {
+          "type": "boolean",
+          "default": true,
+          "description": "Windows only: keep a single PowerShell session alive for system queries instead of spawning a new powershell.exe for each one. Disable only if system metrics stop updating."
         }
       }
     }

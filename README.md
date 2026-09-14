@@ -166,6 +166,8 @@ Customize the extension behavior through VS Code settings:
   "systemGraph.showNetwork": true,                // Show network I/O graph bar in the sidebar panel
   "systemGraph.statusBarEnabled": true,           // Enable/disable all status bar monitoring
   "systemGraph.updateInterval": 2000,             // Update interval in milliseconds (500-10000)
+  "systemGraph.processUpdateInterval": 12000,     // How often to re-read the process list (1000-60000)
+  "systemGraph.windows.persistentPowerShell": true, // Windows: reuse one PowerShell session for system queries
 
   "systemGraph.statusBar.showCpu": true,          // Show system CPU in the status bar
   "systemGraph.statusBar.showMemory": true,       // Show system memory in the status bar
@@ -183,6 +185,10 @@ Customize the extension behavior through VS Code settings:
 - **Status Bar Items** - Toggle individual status bar items via `systemGraph.statusBar.*` settings
 - **Status Bar Display** - Enable/disable all status bar monitoring at once (`systemGraph.statusBarEnabled`)
 - **Update Frequency** - Customize refresh interval (0.5-10 seconds)
+- **Process Polling** - The VS Code CPU/memory metrics need a full process list, which is the most expensive query the extension makes. It is polled on its own slower interval (`systemGraph.processUpdateInterval`); raise it to cut monitoring overhead further.
+- **Windows PowerShell Session** - On Windows the system metrics come from WMI, which means a PowerShell call per metric. The extension keeps one PowerShell session alive and reuses it (`systemGraph.windows.persistentPowerShell`) instead of spawning `powershell.exe` on every poll. Disable it only if metrics stop updating.
+
+> **Note on overhead:** metrics are only collected when something is actually on screen. Hidden status bar items and a closed System Resources panel mean the corresponding queries are skipped, and when everything is hidden the poll stops entirely.
 
 ## 🛠️ Development & Contributing
 
