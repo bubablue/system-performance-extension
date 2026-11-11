@@ -8,11 +8,6 @@ import { addToHistory, formatBytes, generateMiniGraph } from "./utils";
 
 const IS_WINDOWS = process.platform === "win32";
 
-/**
- * Which metrics are actually on screen right now. Every entry that is false is a
- * query we can skip: on Windows each of them is a WMI round trip, and the
- * process list in particular is expensive enough to show up in Task Manager.
- */
 interface MetricNeeds {
   any: boolean;
   processes: boolean;
@@ -53,8 +48,6 @@ export class SystemMonitor {
     SystemMonitor.activeMonitors.add(this);
 
     if (this.provider) {
-      // Collection is skipped while the panel is hidden, so refresh immediately
-      // when it comes back instead of leaving stale bars until the next tick.
       this.disposables.push(
         this.provider.onDidChangeVisibility((visible) => {
           if (visible && this.monitoringEnabled && !this.isPaused) {
@@ -110,8 +103,6 @@ export class SystemMonitor {
 
         const needs = SystemMonitor.computeNeeds();
         if (!needs.any) {
-          // Every status bar item is disabled and the panel is hidden, so there
-          // is nothing to render. Skip the tick rather than query the OS.
           return;
         }
 
@@ -234,11 +225,6 @@ export class SystemMonitor {
     }
   }
 
-  /**
-   * One-off refresh outside the shared interval (startup, manual refresh, panel
-   * becoming visible). Reuses the same collector so a refresh cannot double the
-   * number of OS queries in flight.
-   */
   private async updateSystemInfo(
     statusBarItems: StatusBarItems
   ): Promise<void> {
@@ -485,8 +471,6 @@ export class SystemMonitor {
         0
       );
 
-      // si.disksIO() resolves to null on Windows (and when disk display is off),
-      // so this has to be optional rather than assumed present.
       const totalReadSec = disksIO?.rIO ?? 0;
       const totalWriteSec = disksIO?.wIO ?? 0;
 
@@ -571,11 +555,6 @@ export class SystemMonitor {
     this.disposables.length = 0;
   }
 
-  /**
-   * Works out what is actually displayed across every active monitor, so the
-   * collector can skip the rest. Both surfaces are considered: status bar items
-   * (each individually toggleable) and the sidebar panel (only when visible).
-   */
   private static computeNeeds(): MetricNeeds {
     const config = vscode.workspace.getConfiguration("systemGraph");
     const statusBarConfig = vscode.workspace.getConfiguration(
@@ -607,8 +586,6 @@ export class SystemMonitor {
       inPanel("showVscodeCpu") ||
       inPanel("showVscodeMemory");
     const network = inStatusBar("showNetwork") || inPanel("showNetwork");
-    // Disk I/O has no panel equivalent, and si.disksIO() is unsupported on
-    // Windows anyway (it resolves to null there).
     const disk = !IS_WINDOWS && inStatusBar("showDisk");
 
     return {
@@ -626,27 +603,14 @@ export class SystemMonitor {
     };
   }
 
-  /**
-   * How stale the process list is allowed to be. Enumerating every process is by
-   * far the heaviest query (a full Win32_Process WMI walk on Windows), and VS
-   * Code's own CPU/memory moves slowly enough to tolerate a longer period than
-   * the rest of the metrics.
-   */
   private static getProcessMaxAge(): number {
     const config = vscode.workspace.getConfiguration("systemGraph");
     const updateIntervalMs = config.get("updateInterval", 4000);
     const processIntervalMs = config.get("processUpdateInterval", 12000);
 
-    // The tolerance keeps timer jitter from pushing a refresh onto the next tick.
     return Math.max(0, Math.max(updateIntervalMs, processIntervalMs) - 250);
   }
 
-  /**
-   * On Windows si.mem() shells out to PowerShell (Get-CimInstance
-   * Win32_PageFileUsage) purely to fill in swap figures this extension never
-   * displays - everything it reports comes from `os`. Read `os` directly there
-   * and drop a WMI query per tick.
-   */
   private static async getMemory(): Promise<any> {
     if (!IS_WINDOWS) {
       return si.mem();

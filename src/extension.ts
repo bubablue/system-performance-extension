@@ -171,8 +171,6 @@ export function activate(context: vscode.ExtensionContext) {
           syncPersistentPowerShell(getGlobalState());
         }
 
-        // The poll timer is created once, so a new interval only takes effect
-        // when monitoring is restarted.
         if (e.affectsConfiguration("systemGraph.updateInterval") && statusBarItems) {
           getGlobalState().systemMonitor?.startSystemMonitoring(statusBarItems);
         }

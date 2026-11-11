@@ -8,10 +8,6 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private readonly _onDidChangeVisibility = new vscode.EventEmitter<boolean>();
 
-  /**
-   * Fires whenever the panel is shown or hidden. Collecting metrics nobody can
-   * see is pure waste, so the monitor uses this to stop and restart work.
-   */
   public readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
