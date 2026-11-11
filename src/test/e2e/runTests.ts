@@ -5,6 +5,7 @@ import * as os from "os";
 async function main() {
   try {
     process.env.NODE_ENV = 'test';
+    delete process.env.ELECTRON_RUN_AS_NODE;
     
     const extensionDevelopmentPath = path.resolve(__dirname, "../../../");
 

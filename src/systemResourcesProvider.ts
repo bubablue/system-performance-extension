@@ -6,8 +6,15 @@ import { SystemData, WebviewSettings } from "./types";
 export class SystemResourcesProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "systemResourcesView";
   private _view?: vscode.WebviewView;
+  private readonly _onDidChangeVisibility = new vscode.EventEmitter<boolean>();
+
+  public readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  public isVisible(): boolean {
+    return this._view?.visible === true;
+  }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -15,6 +22,17 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
     _token: vscode.CancellationToken
   ) {
     this._view = webviewView;
+
+    webviewView.onDidChangeVisibility(() => {
+      this._onDidChangeVisibility.fire(webviewView.visible);
+    });
+
+    webviewView.onDidDispose(() => {
+      if (this._view === webviewView) {
+        this._view = undefined;
+      }
+      this._onDidChangeVisibility.fire(false);
+    });
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -48,7 +66,7 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
   }
 
   public updateData(data: SystemData) {
-    if (this._view) {
+    if (this._view?.visible) {
       this._view.webview.postMessage({
         command: "updateData",
         ...data,
@@ -141,6 +159,10 @@ export class SystemResourcesProvider implements vscode.WebviewViewProvider {
 
     this.sendCurrentSettings();
     vscode.window.showInformationMessage("Settings restored to defaults!");
+  }
+
+  public dispose(): void {
+    this._onDidChangeVisibility.dispose();
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {

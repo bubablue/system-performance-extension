@@ -10,10 +10,10 @@
 
 <div align="center" style="margin: 24px 0; padding: 16px;">
   <a href="https://marketplace.visualstudio.com/items?itemName=bubablue00.system-performance" style="margin: 0 8px 12px 8px; display: inline-block;">
-    <img src="https://custom-icon-badges.demolab.com/vscode-marketplace/v/bubablue00.system-performance?style=for-the-badge&logo=visualstudiocode&logoColor=white&color=0078d4&labelColor=1a1a1a&logoWidth=20&label=%20VS%20Code" alt="VS Code Marketplace" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(0,120,212,0.3); transition: all 0.3s ease;"/>
+    <img src="https://vsmarketplacebadges.dev/version-short/bubablue00.system-performance.svg?style=for-the-badge&logo=visualstudiocode&logoColor=white&color=0078d4&labelColor=1a1a1a&label=VS%20Code" alt="VS Code Marketplace" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(0,120,212,0.3); transition: all 0.3s ease;"/>
   </a>
   <a href="https://marketplace.visualstudio.com/items?itemName=bubablue00.system-performance" style="margin: 0 8px 12px 8px; display: inline-block;">
-    <img src="https://custom-icon-badges.demolab.com/vscode-marketplace/i/bubablue00.system-performance?style=for-the-badge&color=28a745&labelColor=1a1a1a&logo=download&logoColor=white&logoWidth=20&label=%20Installs" alt="Installs" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(40,167,69,0.3); transition: all 0.3s ease;"/>
+    <img src="https://vsmarketplacebadges.dev/installs-short/bubablue00.system-performance.svg?style=for-the-badge&color=28a745&labelColor=1a1a1a&logo=download&logoColor=white&label=Installs" alt="Installs" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(40,167,69,0.3); transition: all 0.3s ease;"/>
   </a>
   <a href="LICENSE" style="margin: 0 8px 12px 8px; display: inline-block;">
     <img src="https://custom-icon-badges.demolab.com/badge/%20License-MIT-007acc?style=for-the-badge&logo=law&logoColor=white&labelColor=1a1a1a&logoWidth=20" alt="License" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(0,122,204,0.3); transition: all 0.3s ease;"/>
@@ -166,6 +166,8 @@ Customize the extension behavior through VS Code settings:
   "systemGraph.showNetwork": true,                // Show network I/O graph bar in the sidebar panel
   "systemGraph.statusBarEnabled": true,           // Enable/disable all status bar monitoring
   "systemGraph.updateInterval": 2000,             // Update interval in milliseconds (500-10000)
+  "systemGraph.processUpdateInterval": 12000,     // How often to re-read the process list (1000-60000)
+  "systemGraph.windows.persistentPowerShell": true, // Windows: reuse one PowerShell session for system queries
 
   "systemGraph.statusBar.showCpu": true,          // Show system CPU in the status bar
   "systemGraph.statusBar.showMemory": true,       // Show system memory in the status bar
@@ -183,6 +185,10 @@ Customize the extension behavior through VS Code settings:
 - **Status Bar Items** - Toggle individual status bar items via `systemGraph.statusBar.*` settings
 - **Status Bar Display** - Enable/disable all status bar monitoring at once (`systemGraph.statusBarEnabled`)
 - **Update Frequency** - Customize refresh interval (0.5-10 seconds)
+- **Process Polling** - The VS Code CPU/memory metrics need a full process list, which is the most expensive query the extension makes. It is polled on its own slower interval (`systemGraph.processUpdateInterval`); raise it to cut monitoring overhead further.
+- **Windows PowerShell Session** - On Windows the system metrics come from WMI, which means a PowerShell call per metric. The extension keeps one PowerShell session alive and reuses it (`systemGraph.windows.persistentPowerShell`) instead of spawning `powershell.exe` on every poll. Disable it only if metrics stop updating.
+
+> **Note on overhead:** metrics are only collected when something is actually on screen. Hidden status bar items and a closed System Resources panel mean the corresponding queries are skipped, and when everything is hidden the poll stops entirely.
 
 ## 🛠️ Development & Contributing
 

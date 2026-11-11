@@ -1,4 +1,4 @@
-import { glob } from "glob";
+import * as fs from "fs";
 import * as path from "path";
 import { TestHelper } from "../testHelper";
 
@@ -13,7 +13,14 @@ export async function run(): Promise<void> {
   });
 
   const testsRoot = path.resolve(__dirname, "..");
-  const files = await glob("**/**.test.js", { cwd: testsRoot });
+  const files = fs
+    .readdirSync(testsRoot)
+    .filter((f) => f.endsWith(".test.js"))
+    .sort();
+
+  if (files.length === 0) {
+    throw new Error(`No e2e test files found in ${testsRoot}`);
+  }
 
   files.forEach((f: string) => mocha.addFile(path.resolve(testsRoot, f)));
 

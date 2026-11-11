@@ -1,10 +1,16 @@
 import * as vscode from "vscode";
+import {
+  PowerShellSessionState,
+  startPersistentPowerShell,
+  stopPersistentPowerShell,
+  syncPersistentPowerShell,
+} from "./powerShellSession";
 import { StatusBarItems } from "./types";
 import { StatusBarManager } from "./statusBarManager";
 import { SystemMonitor } from "./systemMonitor";
 import { SystemResourcesProvider } from "./systemResourcesProvider";
 
-interface GlobalExtensionState {
+interface GlobalExtensionState extends PowerShellSessionState {
   systemMonitor: SystemMonitor | undefined;
   provider: SystemResourcesProvider | undefined;
   windowInstances: Map<string, {
@@ -24,6 +30,7 @@ function getGlobalState(): GlobalExtensionState {
       provider: undefined,
       windowInstances: new Map(),
       instanceCount: 0,
+      powerShellStarted: false,
     };
   }
   return globalThis_[GLOBAL_STATE_KEY];
@@ -69,7 +76,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     const globalState = getGlobalState();
     globalState.instanceCount++;
-    
+
+    startPersistentPowerShell(globalState);
+
     windowId = `window-${Date.now()}-${Math.random()}`;
     
     statusBarManager = new StatusBarManager();
@@ -157,6 +166,14 @@ export function activate(context: vscode.ExtensionContext) {
             statusBarManager.updateStatusBarVisibility(statusBarItems);
           }
         }
+
+        if (e.affectsConfiguration("systemGraph.windows.persistentPowerShell")) {
+          syncPersistentPowerShell(getGlobalState());
+        }
+
+        if (e.affectsConfiguration("systemGraph.updateInterval") && statusBarItems) {
+          getGlobalState().systemMonitor?.startSystemMonitoring(statusBarItems);
+        }
       })
     );
 
@@ -197,7 +214,9 @@ export function deactivate() {
       globalState.systemMonitor.dispose();
       globalState.systemMonitor = undefined;
     }
+    globalState.provider?.dispose();
     globalState.provider = undefined;
     globalState.windowInstances.clear();
+    stopPersistentPowerShell(globalState);
   }
 }
