@@ -8,8 +8,12 @@ on:
 
 jobs:
   build-and-test:
-    name: Build & Test System Performance Extension
-    runs-on: ubuntu-latest
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout Code
@@ -18,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
@@ -30,10 +34,11 @@ jobs:
       - name: Compile TypeScript
         run: npm run compile
 
-      # - name: Run Unit Tests
-      #   run: npm run test
+      - name: Run Unit Tests
+        run: npm run test:unit
 
       - name: Run E2E Tests
+        shell: bash
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
@@ -50,11 +55,13 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Verify Extension Package
+        shell: bash
         run: |
           npm install -g @vscode/vsce
           vsce package --no-dependencies
 
       - name: Upload Extension Package
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: system-performance-extension

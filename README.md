@@ -10,10 +10,10 @@
 
 <div align="center" style="margin: 24px 0; padding: 16px;">
   <a href="https://marketplace.visualstudio.com/items?itemName=bubablue00.system-performance" style="margin: 0 8px 12px 8px; display: inline-block;">
-    <img src="https://custom-icon-badges.demolab.com/vscode-marketplace/v/bubablue00.system-performance?style=for-the-badge&logo=visualstudiocode&logoColor=white&color=0078d4&labelColor=1a1a1a&logoWidth=20&label=%20VS%20Code" alt="VS Code Marketplace" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(0,120,212,0.3); transition: all 0.3s ease;"/>
+    <img src="https://vsmarketplacebadges.dev/version-short/bubablue00.system-performance.svg?style=for-the-badge&logo=visualstudiocode&logoColor=white&color=0078d4&labelColor=1a1a1a&label=VS%20Code" alt="VS Code Marketplace" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(0,120,212,0.3); transition: all 0.3s ease;"/>
   </a>
   <a href="https://marketplace.visualstudio.com/items?itemName=bubablue00.system-performance" style="margin: 0 8px 12px 8px; display: inline-block;">
-    <img src="https://custom-icon-badges.demolab.com/vscode-marketplace/i/bubablue00.system-performance?style=for-the-badge&color=28a745&labelColor=1a1a1a&logo=download&logoColor=white&logoWidth=20&label=%20Installs" alt="Installs" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(40,167,69,0.3); transition: all 0.3s ease;"/>
+    <img src="https://vsmarketplacebadges.dev/installs-short/bubablue00.system-performance.svg?style=for-the-badge&color=28a745&labelColor=1a1a1a&logo=download&logoColor=white&label=Installs" alt="Installs" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(40,167,69,0.3); transition: all 0.3s ease;"/>
   </a>
   <a href="LICENSE" style="margin: 0 8px 12px 8px; display: inline-block;">
     <img src="https://custom-icon-badges.demolab.com/badge/%20License-MIT-007acc?style=for-the-badge&logo=law&logoColor=white&labelColor=1a1a1a&logoWidth=20" alt="License" style="border-radius: 12px; padding: 2px; box-shadow: 0 2px 8px rgba(0,122,204,0.3); transition: all 0.3s ease;"/>

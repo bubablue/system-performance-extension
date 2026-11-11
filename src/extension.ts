@@ -1,11 +1,16 @@
-import * as si from "systeminformation";
 import * as vscode from "vscode";
+import {
+  PowerShellSessionState,
+  startPersistentPowerShell,
+  stopPersistentPowerShell,
+  syncPersistentPowerShell,
+} from "./powerShellSession";
 import { StatusBarItems } from "./types";
 import { StatusBarManager } from "./statusBarManager";
 import { SystemMonitor } from "./systemMonitor";
 import { SystemResourcesProvider } from "./systemResourcesProvider";
 
-interface GlobalExtensionState {
+interface GlobalExtensionState extends PowerShellSessionState {
   systemMonitor: SystemMonitor | undefined;
   provider: SystemResourcesProvider | undefined;
   windowInstances: Map<string, {
@@ -13,7 +18,6 @@ interface GlobalExtensionState {
     statusBarManager: StatusBarManager;
   }>;
   instanceCount: number;
-  powerShellStarted: boolean;
 }
 
 const GLOBAL_STATE_KEY = Symbol.for('system-performance-extension.globalState');
@@ -35,46 +39,6 @@ function getGlobalState(): GlobalExtensionState {
 let statusBarItems: StatusBarItems | undefined;
 let statusBarManager: StatusBarManager;
 let windowId: string;
-
-/**
- * Every WMI-backed metric (memory, processes, network) makes systeminformation
- * spawn a throwaway powershell.exe, so a 4 second poll meant three process
- * starts - .NET runtime, PowerShell engine and modules each time. A single
- * persistent session answers all of them over stdin instead.
- */
-function startPersistentPowerShell(globalState: GlobalExtensionState): void {
-  if (process.platform !== "win32" || globalState.powerShellStarted) {
-    return;
-  }
-
-  const enabled = vscode.workspace
-    .getConfiguration("systemGraph")
-    .get("windows.persistentPowerShell", true);
-  if (!enabled) {
-    return;
-  }
-
-  try {
-    si.powerShellStart();
-    globalState.powerShellStarted = true;
-  } catch (error) {
-    console.error("Failed to start persistent PowerShell session:", error);
-  }
-}
-
-function stopPersistentPowerShell(globalState: GlobalExtensionState): void {
-  if (!globalState.powerShellStarted) {
-    return;
-  }
-
-  try {
-    si.powerShellRelease();
-  } catch (error) {
-    console.error("Failed to release persistent PowerShell session:", error);
-  } finally {
-    globalState.powerShellStarted = false;
-  }
-}
 
 async function requestSystemPermissions(context: vscode.ExtensionContext): Promise<boolean> {
   const permissionsGranted = context.globalState.get<boolean>('systemPermissionsGranted');
@@ -204,9 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (e.affectsConfiguration("systemGraph.windows.persistentPowerShell")) {
-          const state = getGlobalState();
-          stopPersistentPowerShell(state);
-          startPersistentPowerShell(state);
+          syncPersistentPowerShell(getGlobalState());
         }
 
         // The poll timer is created once, so a new interval only takes effect
